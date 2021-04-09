@@ -1,24 +1,30 @@
 const Seneca = require('seneca')
-const entities = require('seneca-entity')
-const promisifySeneca = require('seneca-promisify')
-const ping = require('./plugins/ping')
-const incrementCounter = require('./plugins/increment_counter')
+const Entities = require('seneca-entity')
+const SenecaPromisify = require('seneca-promisify')
+const GetPoll = require('./actions/get_poll')
+const OpenPoll = require('./actions/open_poll')
 
 const app = Seneca()
 
 app.quiet()
 
-app.use(entities)
+app.use(Entities)
 
-app.use(promisifySeneca)
+app.use(SenecaPromisify)
 
-app.use(ping, { foo: 'bar' })
+app.use(OpenPoll)
 
-app.use(incrementCounter)
+app.use(GetPoll)
 
-app.act('sys:ping,cmd:ping', Seneca.util.print)
+// dbg...
+//
+app.act({ sys: 'vote', open: 'poll', fields: { title: 'Lorem Ipsum' } },
+  (err, response) => {
+    console.log(err, response)
 
-for (let times = 0; times < 3; times++) {
-  app.act('sys:counter,cmd:inc', Seneca.util.print)
-}
+    app.act({ sys: 'vote', get: 'poll', poll_id: response.poll.id },
+      (err, response) => {
+        console.log(err, response)
+      })
+  })
 
