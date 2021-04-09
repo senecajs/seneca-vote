@@ -1,15 +1,12 @@
 const Seneca = require('seneca')
 const entities = require('seneca-entity')
 const promisifySeneca = require('seneca-promisify')
-const initMemStore = require('seneca-mem-store')
 const ping = require('./plugins/ping')
 const throttle = require('./plugins/throttle')
 
 const app = Seneca()
 
 app.quiet()
-
-app.use(initMemStore)
 
 app.use(entities)
 
