@@ -12,6 +12,7 @@
   "dependencies": {
     "assert-plus": "1.0.0",
     "seneca": "3.23.2",
+    "seneca-entity": "13.0.0",
     "seneca-promisify": "2.0.0"
   }
 }
