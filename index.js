@@ -2,7 +2,7 @@ const Seneca = require('seneca')
 const entities = require('seneca-entity')
 const promisifySeneca = require('seneca-promisify')
 const ping = require('./plugins/ping')
-const throttle = require('./plugins/throttle')
+const incrementCounter = require('./plugins/increment_counter')
 
 const app = Seneca()
 
@@ -14,11 +14,11 @@ app.use(promisifySeneca)
 
 app.use(ping, { foo: 'bar' })
 
-app.use(throttle)
+app.use(incrementCounter)
 
 app.act('sys:ping,cmd:ping', Seneca.util.print)
 
 for (let times = 0; times < 3; times++) {
-  app.act('sys:throttle,cmd:throttle', Seneca.util.print)
+  app.act('sys:counter,cmd:inc', Seneca.util.print)
 }
 

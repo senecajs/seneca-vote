@@ -1,8 +1,8 @@
 const Assert = require('assert-plus')
 const { lock } = require('../lib/lock')
 
-function throttle(opts = {}) {
-  this.add('sys:throttle,cmd:throttle', async function (msg, reply) {
+function incrementCounter(opts = {}) {
+  this.add('sys:counter,cmd:inc', async function (msg, reply) {
     await lock(async () => {
       const counter_entity = this.entity('sys/counter')
       const existing_counter = await counter_entity.load$({ tag: '$' })
@@ -27,4 +27,4 @@ function throttle(opts = {}) {
   })
 }
 
-module.exports = throttle
+module.exports = incrementCounter
