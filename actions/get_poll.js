@@ -5,20 +5,28 @@ const Shapes = require('../lib/shapes')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,get:poll', async function (msg, reply) {
-    // TODO:
-    // - [ ] Use seneca-joi
-    // - [ ] Proper handling of the validation errors.
-    //
-    Shapes.validate(joi => joi.object({
-      poll_id: joi.string().max(64).required()
-    }))
-      // WARNING: UNSAFE. TODO: Proper error handling.
+    try {
+      // TODO:
+      // - [ ] Use seneca-joi
+      // - [ ] Proper handling of the validation errors.
       //
-      .catch(reply)
+      await Shapes.validate(joi => joi.object({
+        poll_id: joi.string().max(64).required()
+      }).unknown(), msg, { stripUnknown: true })
+    } catch (err) {
+      if (err && err.isJoi) {
+        return reply(null, {
+          status: 'failed',
+          error: { message: err.message }
+        })
+      }
+
+      return reply(err)
+    }
 
     const poll_id = fetchProp(msg, 'poll_id', Assert.string)
     const poll_entity = Poll.entity({ seneca: this })
-
+ 
     const poll = await poll_entity.load$({ id$: poll_id })
 
     if (!poll) {
@@ -31,7 +39,10 @@ module.exports = function (opts = {}) {
       })
     }
 
-    return reply(null, { poll: poll.data$(false) })
+    return reply(null, {
+      status: 'success',
+      data: { poll: poll.data$(false) }
+    })
   })
 }
 
