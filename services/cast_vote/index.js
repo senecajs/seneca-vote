@@ -17,7 +17,7 @@ class CastVoteService {
     const poll_id = fetchProp(args, 'poll_id')
     const vote_type = fetchProp(args, 'vote_type')
 
-    return lock(async () => {
+    return await lock(async () => {
       const poll = await Poll.entity({ seneca }).load$({ id: poll_id })
 
       if (!poll) {
