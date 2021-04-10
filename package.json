@@ -15,5 +15,8 @@
     "seneca": "3.23.2",
     "seneca-entity": "13.0.0",
     "seneca-promisify": "2.0.0"
+  },
+  "devDependencies": {
+    "jasmine": "3.7.0"
   }
 }
