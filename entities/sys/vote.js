@@ -9,6 +9,14 @@ class Vote {
 
     return seneca.entity('sys/vote')
   }
+
+  static TYPE_UP() {
+    return 'up'
+  }
+
+  static TYPE_DOWN() {
+    return 'down'
+  }
 }
 
 module.exports = Vote
