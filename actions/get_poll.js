@@ -32,6 +32,8 @@ module.exports = function (opts = {}) {
         data: { poll: poll.data$(false) }
       })
     } catch (err) {
+      // TODO: DRY up this pattern.
+      //
       if (err instanceof ValidationError) {
         const error_message = fetchProp(err, 'message')
 
