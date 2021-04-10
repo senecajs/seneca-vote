@@ -25,7 +25,10 @@ module.exports = function (opts = {}) {
       // TODO: Improve this code. Please use the following for details:
       // https://github.com/voxgig/seneca-member/blob/429ca68fc07311d97a8f18a3fea3f43a24fa21db/member.js#L272
       //
-      return seneca.fail(new Error('poll does not exist'))
+      return reply(null, {
+        status: 'failed',
+        error: { message: 'Poll does not exist' }
+      })
     }
 
     return reply(null, { poll: poll.data$(false) })
