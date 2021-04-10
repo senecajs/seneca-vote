@@ -16,15 +16,3 @@ app.use(OpenPoll)
 
 app.use(GetPoll)
 
-// dbg...
-//
-app.act({ sys: 'vote', open: 'poll', fields: { title: 'Lorem Ipsum' } },
-  (err, response) => {
-    console.log(err, response)
-
-    app.act({ sys: 'vote', get: 'poll', poll_id: response.poll.id },
-      (err, response) => {
-        console.log(err, response)
-      })
-  })
-
