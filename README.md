@@ -2,6 +2,11 @@
 
 A voting plugin for Seneca.js
 
+## Contents:  
+- [Requirements](#requirements)
+- [Actions](#actions)
+- [Dev Scripts](#dev-scripts)
+
 ## Requirements
 
 The following Seneca plugins must be plugged in before this plugin
@@ -176,3 +181,11 @@ When the poll does not exist:
 ```js
 { status: "failed", error: { message: String? } }
 ```
+
+#### Dev Scripts
+`$ npm test`  
+Runs the automated tests.  
+
+`$ npm run check-coverage`  
+Generates a test coverage report.  
+
