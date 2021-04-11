@@ -24,33 +24,12 @@ class CastVoteService {
         throw new NotFoundError(`Poll with id ${poll_id} does not exist.`)
       }
 
-
-      const existing_vote = await Vote.entity({ seneca })
-        .load$({
-          voter_id,
-          voter_type,
-          poll_id
-        })
-
-      if (existing_vote) {
-        const existing_vote_type = fetchProp(existing_vote, 'type')
-
-        if (vote_type !== existing_vote_type) {
-          await existing_vote 
-            .data$({ type: vote_type })
-            .save$()
-        }
-
-        return
-      }
-
       const vote_attributes = {
         poll_id,
-        type: vote_type,
         voter_id,
         voter_type,
-        created_at: new Date(),
-        updated_at: null
+        type: vote_type,
+        created_at: new Date()
       }
 
       const _new_vote = await Vote.entity({ seneca })

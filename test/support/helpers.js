@@ -1,6 +1,12 @@
 const Assert = require('assert-plus')
+const moment = require('moment')
 
 class TestHelpers {
+  static yesterday(date = new Date()) {
+    Assert.date(date, 'date')
+    return moment(date).subtract(1, 'day').toDate()
+  }
+
   static fetchProp(base, prop, assertType = (x, msg) => {}) {
     if (base === null || base === undefined) {
       Assert.fail('Object cannot be null or undefined.')
