@@ -3,7 +3,7 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const { fetchProp } = require('../support/helpers')
-const CastVote = require('../../actions/cast_vote')
+const VotePlugin = require('../../')
 
 describe('the CastPoll action', () => {
   let seneca
@@ -12,7 +12,7 @@ describe('the CastPoll action', () => {
     seneca = Seneca({ log: 'test' })
       .use(Entities)
       .use(SenecaPromisify)
-      .use(CastVote)
+      .use(VotePlugin)
   })
 
   function senecaUnderTest(seneca, cb) {
