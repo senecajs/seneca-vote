@@ -2,6 +2,26 @@
 
 A voting plugin for Seneca.js
 
+## Requirements
+
+The following Seneca plugins must be plugged in before this plugin
+can be used:  
+- seneca-entity
+- seneca-promisify
+
+Normally, your code would look like this:
+```js
+const Seneca = require('seneca')
+const Entities = require('seneca-entity')
+const SenecaPromisify = require('seneca-promisify')
+const VotePlugin = require('seneca-vote')
+
+Seneca()
+  .use(Entities)
+  .use(SenecaPromisify)
+  .use(VotePlugin)
+```
+
 ## Actions
 
 * [Upvote Action](#upvote-action)  
