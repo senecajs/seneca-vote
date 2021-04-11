@@ -22,13 +22,13 @@ module.exports = function (opts = {}) {
 
       if (!poll) {
         return reply(null, {
-          status: 'failed',
-          error: { message: 'Poll does not exist' }
+          ok: false,
+          why: 'Poll does not exist'
         })
       }
 
       return reply(null, {
-        status: 'success',
+        ok: true,
         data: { poll: poll.data$(false) }
       })
     } catch (err) {
@@ -38,8 +38,8 @@ module.exports = function (opts = {}) {
         const error_message = fetchProp(err, 'message')
 
         return reply(null, {
-          status: 'failed',
-          error: { message: error_message }
+          ok: false,
+          why: error_message
         })
       }
 
