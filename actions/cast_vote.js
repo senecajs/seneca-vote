@@ -4,6 +4,7 @@ const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError, NotFoundError } = require('../lib/errors')
 const CastVoteService = require('../services/cast_vote')
+const GetVoteStatsForPollService = require('../services/get_vote_stats_for_poll')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,vote:*', async function(msg, reply) {
@@ -33,8 +34,14 @@ module.exports = function (opts = {}) {
         voter_type
       }, { seneca: this })
 
+      const poll_stats = await GetVoteStatsForPollService
+        .getVoteStatsForPoll({ poll_id }, { seneca: this })
 
-      return reply(null, { status: 'success' })
+
+      return reply(null, {
+        status: 'success',
+        data: { poll_stats }
+      })
     } catch (err) {
       // TODO: DRY up this pattern.
       //
@@ -60,5 +67,4 @@ module.exports = function (opts = {}) {
     }
   })
 }
-
 
