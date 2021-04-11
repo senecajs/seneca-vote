@@ -43,7 +43,7 @@ module.exports = function (opts = {}) {
         })
       }
 
-      throw err
+      return reply(err)
     }
   })
 }

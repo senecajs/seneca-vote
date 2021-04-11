@@ -1,10 +1,9 @@
 const Assert = require('assert-plus')
 const Joi = require('joi')
-const Poll = require('../entities/sys/poll')
-const { lock } = require('../lib/lock')
 const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError } = require('../lib/errors')
+const OpenPollService = require('../services/open_poll')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,open:poll', async function (msg, reply) {
@@ -21,33 +20,11 @@ module.exports = function (opts = {}) {
       const safe_params = await validateMessage(msg)
       const poll_title = fetchProp(safe_params, ['fields', 'title'], Assert.string)
 
-      await lock(async () => {
-        const poll_entity = Poll.entity({ seneca: this })
-        const existing_poll = await poll_entity.load$({ title: poll_title })
+      const opened_poll = await OpenPollService.openPoll({ poll_title }, { seneca: this })
 
-        if (existing_poll) {
-          return reply(null, {
-            status: 'success',
-            data: { poll: existing_poll.data$(false) }
-          })
-        }
-
-        const poll_attributes = {
-          title: poll_title,
-          created_at: new Date(),
-          updated_at: null
-        }
-
-        await poll_entity.make$()
-          .data$(poll_attributes)
-          .save$()
-
-        const new_poll = await poll_entity.load$(poll_attributes)
-
-        return reply(null, {
-          status: 'success',
-          data: { poll: new_poll.data$(false) }
-        })
+      return reply(null, {
+        status: 'success',
+        data: { poll: opened_poll.data$(false) }
       })
     } catch (err) {
       // TODO: DRY up this pattern.
@@ -61,7 +38,7 @@ module.exports = function (opts = {}) {
         })
       }
 
-      throw err
+      return reply(err)
     }
   })
 }
