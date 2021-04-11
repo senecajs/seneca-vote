@@ -58,10 +58,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields" is required'
-              }
+              ok: false,
+              why: '"fields" is required'
             })
 
             return done()
@@ -82,10 +80,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.poll_id" is required'
-              }
+              ok: false,
+              why: '"fields.poll_id" is required'
             })
 
             return done()
@@ -106,10 +102,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_id" is required'
-              }
+              ok: false,
+              why: '"fields.voter_id" is required'
             })
 
             return done()
@@ -130,10 +124,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_type" is required'
-              }
+              ok: false,
+              why: '"fields.voter_type" is required'
             })
 
             return done()
@@ -154,10 +146,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_type" must be [sys/user]'
-              }
+              ok: false,
+              why: '"fields.voter_type" must be [sys/user]'
             })
 
             return done()
@@ -184,10 +174,8 @@ describe('the CastPoll action', () => {
           ))
           .then(async (result) => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: `Poll with id ${fake_poll_id} does not exist.` 
-              }
+              ok: false,
+              why: `Poll with id ${fake_poll_id} does not exist.`
             })
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
@@ -262,7 +250,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
               })
 
               expect(await countVotes(seneca_under_test)).toEqual(1)
@@ -314,7 +303,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
@@ -351,7 +341,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
@@ -404,10 +395,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields" is required'
-              }
+              ok: false,
+              why: '"fields" is required'
             })
 
             return done()
@@ -428,10 +417,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.poll_id" is required'
-              }
+              ok: false,
+              why: '"fields.poll_id" is required'
             })
 
             return done()
@@ -452,10 +439,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_id" is required'
-              }
+              ok: false,
+              why: '"fields.voter_id" is required'
             })
 
             return done()
@@ -476,10 +461,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_type" is required'
-              }
+              ok: false,
+              why: '"fields.voter_type" is required'
             })
 
             return done()
@@ -500,10 +483,8 @@ describe('the CastPoll action', () => {
         )
           .then(result => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: '"fields.voter_type" must be [sys/user]'
-              }
+              ok: false,
+              why: '"fields.voter_type" must be [sys/user]'
             })
 
             return done()
@@ -530,10 +511,8 @@ describe('the CastPoll action', () => {
           ))
           .then(async (result) => {
             expect(result).toEqual({
-              status: 'failed',
-              error: {
-                message: `Poll with id ${fake_poll_id} does not exist.` 
-              }
+              ok: false,
+              why: `Poll with id ${fake_poll_id} does not exist.`
             })
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
@@ -608,7 +587,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
               })
 
               expect(await countVotes(seneca_under_test)).toEqual(1)
@@ -660,7 +640,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
@@ -697,7 +678,8 @@ describe('the CastPoll action', () => {
             ))
             .then(async (result) => {
               expect(result).toEqual({
-                status: 'success', data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                ok: true,
+                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
