@@ -40,8 +40,8 @@ describe('the OpenPoll action', () => {
       )
         .then(result => {
           expect(result).toEqual({
-            status: 'failed',
-            error: { message: '"fields" is required' }
+            ok: false,
+            why: '"fields" is required'
           })
 
           return done()
@@ -59,8 +59,8 @@ describe('the OpenPoll action', () => {
       )
         .then(result => {
           expect(result).toEqual({
-            status: 'failed',
-            error: { message: '"fields.title" is required' }
+            ok: false,
+            why: '"fields.title" is required'
           })
 
           return done()
@@ -87,7 +87,7 @@ describe('the OpenPoll action', () => {
           expect(await countPolls(seneca_under_test)).toEqual(1)
 
           expect(result).toEqual({
-            status: 'success',
+            ok: true,
             data: {
               poll: {
                 id: jasmine.any(String),
@@ -140,7 +140,7 @@ describe('the OpenPoll action', () => {
           expect(await countPolls(seneca_under_test)).toEqual(1)
 
           expect(result).toEqual({
-            status: 'success',
+            ok: true,
             data: {
               poll: {
                 id: poll_id,
@@ -157,5 +157,4 @@ describe('the OpenPoll action', () => {
     })
   })
 })
-
 
