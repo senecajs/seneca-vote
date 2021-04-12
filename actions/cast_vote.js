@@ -39,7 +39,7 @@ module.exports = function (opts = {}) {
 
 
       return reply(null, {
-        status: 'success',
+        ok: true,
         data: { poll_stats }
       })
     } catch (err) {
@@ -49,8 +49,8 @@ module.exports = function (opts = {}) {
         const error_message = fetchProp(err, 'message')
 
         return reply(null, {
-          status: 'failed',
-          error: { message: error_message }
+          ok: false,
+          why: error_message
         })
       }
 
@@ -58,8 +58,8 @@ module.exports = function (opts = {}) {
         const error_message = fetchProp(err, 'message')
 
         return reply(null, {
-          status: 'failed',
-          error: { message: error_message }
+          ok: false,
+          why: error_message
         })
       }
 

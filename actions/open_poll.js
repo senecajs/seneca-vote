@@ -23,7 +23,7 @@ module.exports = function (opts = {}) {
       const opened_poll = await OpenPollService.openPoll({ poll_title }, { seneca: this })
 
       return reply(null, {
-        status: 'success',
+        ok: true,
         data: { poll: opened_poll.data$(false) }
       })
     } catch (err) {
@@ -33,8 +33,8 @@ module.exports = function (opts = {}) {
         const error_message = fetchProp(err, 'message')
 
         return reply(null, {
-          status: 'failed',
-          error: { message: error_message }
+          ok: false,
+          why: error_message
         })
       }
 

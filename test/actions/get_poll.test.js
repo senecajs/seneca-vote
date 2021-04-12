@@ -32,8 +32,8 @@ describe('the GetPoll action', () => {
       )
         .then(result => {
           expect(result).toEqual({
-            status: 'failed',
-            error: { message: '"poll_id" is required' }
+            ok: false,
+            why: '"poll_id" is required'
           })
 
           return done()
@@ -51,8 +51,8 @@ describe('the GetPoll action', () => {
       )
         .then(result => {
           expect(result).toEqual({
-            status: 'failed',
-            error: { message: 'Poll does not exist' }
+            ok: false,
+            why: 'Poll does not exist'
           })
 
           return done()
@@ -91,7 +91,7 @@ describe('the GetPoll action', () => {
       )
         .then(result => {
           expect(result).toEqual({
-            status: 'success',
+            ok: true,
             data: {
               poll: {
                 title: poll_title,
