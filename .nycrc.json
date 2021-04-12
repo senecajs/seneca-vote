@@ -1,0 +1,5 @@
+{
+  "all": true,
+  "check-coverage": true,
+  "include": ["actions/**/*.js", "entities/**", "lib/**", "services/**"]
+}
