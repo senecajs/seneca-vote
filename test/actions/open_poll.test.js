@@ -27,8 +27,12 @@ describe('the OpenPoll action', () => {
     return countEntities(seneca.entity('sys/poll'))
   }
 
+  function openPollPattern(params) {
+    return { sys: 'vote', open: 'poll', ...params }
+  }
+
   async function messageOpenPoll(seneca, params) {
-    return seneca.post({ sys: 'vote', open: 'poll', ...params })
+    return seneca.post(openPollPattern(params))
   }
 
   describe('when the fields parameter is missing from the message', () => {
@@ -72,35 +76,81 @@ describe('the OpenPoll action', () => {
   describe('when the poll with the given title does not exist', () => {
     const poll_title = 'Dolor Sit Amet'
 
-    it('creates a new poll with the given title', done => {
-      const seneca_under_test = senecaUnderTest(seneca, done)
+    describe('normally', () => {
+      it('creates a new poll with the given title', done => {
+        const seneca_under_test = senecaUnderTest(seneca, done)
 
-      countPolls(seneca_under_test)
-        .then(num_polls_initially => {
-          Assert.strictEqual(0, num_polls_initially)
-        })
-        .then(() => messageOpenPoll(
-          seneca_under_test,
-          { fields: { title: poll_title } }
-        ))
-        .then(async (result) => {
-          expect(await countPolls(seneca_under_test)).toEqual(1)
-
-          expect(result).toEqual({
-            ok: true,
-            data: {
-              poll: {
-                id: jasmine.any(String),
-                title: poll_title,
-                created_at: jasmine.any(Date),
-                updated_at: null
-              }
-            }
+        countPolls(seneca_under_test)
+          .then(num_polls_initially => {
+            Assert.strictEqual(0, num_polls_initially)
           })
+          .then(() => messageOpenPoll(
+            seneca_under_test,
+            { fields: { title: poll_title } }
+          ))
+          .then(async (result) => {
+            expect(await countPolls(seneca_under_test)).toEqual(1)
 
-          return done()
+            expect(result).toEqual({
+              ok: true,
+              data: {
+                poll: {
+                  id: jasmine.any(String),
+                  title: poll_title,
+                  created_at: jasmine.any(Date),
+                  updated_at: null
+                }
+              }
+            })
+
+            return done()
+          })
+          .catch(done)
+      })
+    })
+
+    describe('when bombarded with messages to create a poll with the same title', () => {
+      describe('when the lock is enabled', () => {
+        it('only creates one poll', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          countPolls(seneca_under_test)
+            .then(num_polls_initially => {
+              Assert.strictEqual(0, num_polls_initially)
+            })
+            .then(() => new Promise((resolve, _reject) => {
+              let num_calls = 0
+
+              const onBombsAway = (err, _result) => err ? done(err) : num_calls--
+              const registerTracedAction = cb => { num_calls++; return cb }
+
+
+              const action_params = { fields: { title: poll_title } }
+
+              seneca_under_test
+                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
+                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
+                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
+
+              return waitOnBombardmentToBeOver(resolve)
+
+
+              function waitOnBombardmentToBeOver(cb) {
+                if (num_calls === 0) {
+                  return cb()
+                }
+
+                return setImmediate(() => waitOnBombardmentToBeOver(cb))
+              }
+            }))
+            .then(async () => {
+              expect(await countPolls(seneca_under_test)).toEqual(1)
+
+              return done()
+            })
+            .catch(done)
         })
-        .catch(done)
+      })
     })
   })
 
