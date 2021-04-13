@@ -2,7 +2,7 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const { fetchProp } = require('../support/helpers')
+const { fetchProp, yesterday } = require('../support/helpers')
 const VotePlugin = require('../../')
 
 describe('the CastPoll action', () => {
@@ -196,7 +196,6 @@ describe('the CastPoll action', () => {
         const poll = await seneca.entity('sys/poll')
           .make$({
             title: 'Lorem Ipsum',
-            updated_at: null,
             created_at: new Date()
           })
           .save$()
@@ -210,6 +209,18 @@ describe('the CastPoll action', () => {
       })
 
       describe('when the voter has already upvoted on this poll', () => {
+        const now = new Date()
+
+        beforeEach(() => {
+          jasmine.clock().install()
+          jasmine.clock().mockDate(now)
+        })
+
+        afterEach(() => {
+          jasmine.clock().uninstall()
+        })
+
+
         let vote_id
 
         const voter_id = 'v123abc'
@@ -218,21 +229,18 @@ describe('the CastPoll action', () => {
         beforeEach(async () => {
           // TODO: Use a factory.
           //
-          const vote = await seneca.entity('sys/vote')
+          await seneca.entity('sys/vote')
             .make$({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
-              created_at: new Date(),
-              updated_at: null
+              created_at: yesterday(now)
             })
             .save$()
-
-          vote_id = fetchProp(vote, 'id')
         })
 
-        it('does not cast a new upvote', done => {
+        it('creates a new downvote, the existing upvote is considered a "tombstone"', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -254,7 +262,30 @@ describe('the CastPoll action', () => {
                 data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
               })
 
-              expect(await countVotes(seneca_under_test)).toEqual(1)
+              expect(await countVotes(seneca)).toEqual(2)
+
+
+              const vote = await seneca.entity('sys/vote')
+                .load$({ type: 'up', created_at: now })
+
+              expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'up'
+              }))
+
+
+              const older_vote = await seneca.entity('sys/vote')
+                .load$({ type: 'up', created_at: yesterday(now) })
+
+              expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'up'
+              }))
+
 
               return done()
             })
@@ -263,6 +294,18 @@ describe('the CastPoll action', () => {
       })
 
       describe('when the voter has already downvoted on this poll', () => {
+        const now = new Date()
+
+        beforeEach(() => {
+          jasmine.clock().install()
+          jasmine.clock().mockDate(now)
+        })
+
+        afterEach(() => {
+          jasmine.clock().uninstall()
+        })
+
+
         let vote_id
 
         const voter_id = 'v123abc'
@@ -277,15 +320,14 @@ describe('the CastPoll action', () => {
               voter_id,
               voter_type,
               type: 'down',
-              created_at: new Date(),
-              updated_at: null
+              created_at: yesterday(now)
             })
             .save$()
 
           vote_id = fetchProp(vote, 'id')
         })
 
-        it('does not cast a new upvote, but updates the existing downvote to upvote', done => {
+        it('creates a new upvote, the existing downvote is considered a "tombstone"', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -307,13 +349,32 @@ describe('the CastPoll action', () => {
                 data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
               })
 
-              expect(await countVotes(seneca)).toEqual(1)
+              expect(await countVotes(seneca)).toEqual(2)
 
-              const vote = await seneca.entity('sys/vote').load$({ id: vote_id })
-              Assert.object(vote, 'vote')
 
-              const vote_type = fetchProp(vote, 'type')
-              expect(vote_type).toEqual('up')
+              const vote = await seneca.entity('sys/vote')
+                .load$({ type: 'up' })
+
+              expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'up',
+                created_at: now
+              }))
+
+
+              const older_vote = await seneca.entity('sys/vote')
+                .load$({ type: 'down' })
+
+              expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'down',
+                created_at: yesterday(now)
+              }))
+
 
               return done()
             })
@@ -356,8 +417,7 @@ describe('the CastPoll action', () => {
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
-                created_at: jasmine.any(Date),
-                updated_at: null
+                created_at: jasmine.any(Date)
               }))
 
               return done()
@@ -533,7 +593,6 @@ describe('the CastPoll action', () => {
         const poll = await seneca.entity('sys/poll')
           .make$({
             title: 'Lorem Ipsum',
-            updated_at: null,
             created_at: new Date()
           })
           .save$()
@@ -547,6 +606,18 @@ describe('the CastPoll action', () => {
       })
 
       describe('when the voter has already downvoted on this poll', () => {
+        const now = new Date()
+
+        beforeEach(() => {
+          jasmine.clock().install()
+          jasmine.clock().mockDate(now)
+        })
+
+        afterEach(() => {
+          jasmine.clock().uninstall()
+        })
+
+
         let vote_id
 
         const voter_id = 'v123abc'
@@ -561,15 +632,14 @@ describe('the CastPoll action', () => {
               voter_id,
               voter_type,
               type: 'down',
-              created_at: new Date(),
-              updated_at: null
+              created_at: yesterday(now)
             })
             .save$()
 
           vote_id = fetchProp(vote, 'id')
         })
 
-        it('does not cast a new downvote', done => {
+        it('creates a new downvote, the existing downvote is considered a "tombstone"', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -591,7 +661,30 @@ describe('the CastPoll action', () => {
                 data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
               })
 
-              expect(await countVotes(seneca_under_test)).toEqual(1)
+              expect(await countVotes(seneca)).toEqual(2)
+
+
+              const vote = await seneca.entity('sys/vote')
+                .load$({ type: 'down', created_at: now })
+
+              expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'down'
+              }))
+
+
+              const older_vote = await seneca.entity('sys/vote')
+                .load$({ type: 'down', created_at: yesterday(now) })
+
+              expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'down'
+              }))
+
 
               return done()
             })
@@ -600,6 +693,18 @@ describe('the CastPoll action', () => {
       })
 
       describe('when the voter has already upvoted on this poll', () => {
+        const now = new Date()
+
+        beforeEach(() => {
+          jasmine.clock().install()
+          jasmine.clock().mockDate(now)
+        })
+
+        afterEach(() => {
+          jasmine.clock().uninstall()
+        })
+
+
         let vote_id
 
         const voter_id = 'v123abc'
@@ -608,21 +713,18 @@ describe('the CastPoll action', () => {
         beforeEach(async () => {
           // TODO: Use a factory.
           //
-          const vote = await seneca.entity('sys/vote')
+          await seneca.entity('sys/vote')
             .make$({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
-              created_at: new Date(),
-              updated_at: null
+              created_at: yesterday(now)
             })
             .save$()
-
-          vote_id = fetchProp(vote, 'id')
         })
 
-        it('does not cast a new upvote, but updates the existing downvote to upvote', done => {
+        it('creates a new downvote, the existing upvote is considered a "tombstone"', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -644,13 +746,32 @@ describe('the CastPoll action', () => {
                 data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
               })
 
-              expect(await countVotes(seneca)).toEqual(1)
+              expect(await countVotes(seneca)).toEqual(2)
 
-              const vote = await seneca.entity('sys/vote').load$({ id: vote_id })
-              Assert.object(vote, 'vote')
 
-              const vote_type = fetchProp(vote, 'type')
-              expect(vote_type).toEqual('down')
+              const vote = await seneca.entity('sys/vote')
+                .load$({ type: 'down' })
+
+              expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'down',
+                created_at: now
+              }))
+
+
+              const older_vote = await seneca.entity('sys/vote')
+                .load$({ type: 'up' })
+
+              expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+                poll_id,
+                voter_id,
+                voter_type,
+                type: 'up',
+                created_at: yesterday(now)
+              }))
+
 
               return done()
             })
@@ -693,8 +814,7 @@ describe('the CastPoll action', () => {
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
-                created_at: jasmine.any(Date),
-                updated_at: null
+                created_at: jasmine.any(Date)
               }))
 
               return done()
