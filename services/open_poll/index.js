@@ -33,7 +33,7 @@ class OpenPollService {
       const new_poll = await poll_entity.load$(poll_attributes)
 
       return new_poll
-    })
+    }, { disabled: false })
   }
 }
 
