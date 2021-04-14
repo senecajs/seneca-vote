@@ -126,6 +126,38 @@ describe('the OpenPoll action', () => {
     })
 
     describe('when bombarded with messages to create a poll with the same title', () => {
+      function bombardOpenPolls(args, done) {
+        const seneca = fetchProp(args, 'seneca', Assert.ok)
+        const num_calls = fetchProp(args, 'num_calls', Assert.number)
+
+        Assert(num_calls >= 0, 'num_calls')
+
+        return new Promise((resolve, _reject) => {
+          let cur_ncalls
+          cur_ncalls = num_calls
+
+          const onBombsAway = (err, _result) => err ? done(err) : cur_ncalls--
+
+
+          const action_params = { fields: { title: poll_title } }
+
+          for (let times = 0; times < num_calls; times++) {
+            seneca.act(openPollPattern(action_params), onBombsAway)
+          }
+
+          return waitOnBombardmentToBeOver(resolve)
+
+
+          function waitOnBombardmentToBeOver(cb) {
+            if (cur_ncalls === 0) {
+              return cb()
+            }
+
+            return setImmediate(() => waitOnBombardmentToBeOver(cb))
+          }
+        })
+      }
+
       describe('when locks are enabled', () => {
         let seneca
 
@@ -142,33 +174,36 @@ describe('the OpenPoll action', () => {
             .then(num_polls_initially => {
               Assert.strictEqual(0, num_polls_initially)
             })
-            .then(() => new Promise((resolve, _reject) => {
-              let num_calls = 0
-
-              const onBombsAway = (err, _result) => err ? done(err) : num_calls--
-              const registerTracedAction = cb => { num_calls++; return cb }
-
-
-              const action_params = { fields: { title: poll_title } }
-
-              seneca_under_test
-                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
-                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
-                .act(openPollPattern(action_params), registerTracedAction(onBombsAway))
-
-              return waitOnBombardmentToBeOver(resolve)
-
-
-              function waitOnBombardmentToBeOver(cb) {
-                if (num_calls === 0) {
-                  return cb()
-                }
-
-                return setImmediate(() => waitOnBombardmentToBeOver(cb))
-              }
-            }))
+            .then(() => bombardOpenPolls({ seneca, num_calls: 3 }))
             .then(async () => {
               expect(await countPolls(seneca_under_test)).toEqual(1)
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('when locks are disabled', () => {
+        let seneca
+
+        beforeEach(() => {
+          seneca = makeSeneca({
+            vote_plugin_opts: { locks_disabled: true }
+          })
+        })
+
+        it('results in a race condition', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+          const num_calls = 3
+
+          countPolls(seneca_under_test)
+            .then(num_polls_initially => {
+              Assert.strictEqual(0, num_polls_initially)
+            })
+            .then(() => bombardOpenPolls({ seneca, num_calls }))
+            .then(async () => {
+              expect(await countPolls(seneca_under_test)).toEqual(num_calls)
 
               return done()
             })
