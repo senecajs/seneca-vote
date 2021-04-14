@@ -18,7 +18,7 @@ class CastVoteService {
     const vote_type = fetchProp(args, 'vote_type')
 
     return await lock(async () => {
-      const poll = await Poll.entity({ seneca }).load$({ id: poll_id })
+      const poll = await Poll.entity({ seneca }).load$(poll_id)
 
       if (!poll) {
         throw new NotFoundError(`Poll with id ${poll_id} does not exist.`)

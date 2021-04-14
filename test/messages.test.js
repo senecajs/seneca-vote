@@ -27,7 +27,7 @@ describe('message-level tests', () => {
 
   beforeEach(() => {
     test_spec = {
-      print: true,
+      print: false,
       pattern: 'sys:vote',
       data: {
         sys: {
@@ -36,13 +36,21 @@ describe('message-level tests', () => {
             //
             [poll_id]: {
               id: poll_id,
-              title: 'Lorem Ipsum',
-              created_at: new Date()
+              title: 'Best hairline of the Ist century A.D.',
+              created_at: '2021-04-14T01:02:00.765Z'
             }
           }
         }
       },
       calls: [
+        {
+          pattern: 'vote:up',
+          params: {},
+          out: {
+            ok: false,
+            why: '"fields" is required'
+          }
+        },
         {
           pattern: 'vote:up',
           params: {
@@ -75,6 +83,14 @@ describe('message-level tests', () => {
         },
         {
           pattern: 'vote:down',
+          params: {},
+          out: {
+            ok: false,
+            why: '"fields" is required'
+          }
+        },
+        {
+          pattern: 'vote:down',
           params: {
             fields: {
               poll_id,
@@ -103,6 +119,56 @@ describe('message-level tests', () => {
             why: 'Poll with id does_not_exist does not exist.'
           }
         },
+
+        {
+          pattern: 'get:poll',
+          params: {},
+          out: {
+            ok: false,
+            why: '"poll_id" is required'
+          }
+        },
+        {
+          pattern: 'get:poll',
+          params: { poll_id },
+          out: {
+            ok: true,
+            data: {
+              poll: {
+                id: poll_id,
+                title: 'Best hairline of the Ist century A.D.',
+                created_at: '2021-04-14T01:02:00.765Z'
+              }
+            }
+          }
+        },
+        {
+          pattern: 'get:poll',
+          params: { poll_id: 'does_not_exist' },
+          out: {
+            ok: false,
+            why: 'Poll does not exist'
+          }
+        },
+
+        {
+          pattern: 'open:poll',
+          params: {
+            fields: {
+              title: 'Best hairline of the Ist century A.D.'
+            }
+          },
+          out: {
+            ok: true,
+            data: {
+              poll: {
+                id: poll_id,
+                title: 'Best hairline of the Ist century A.D.',
+                created_at: '2021-04-14T01:02:00.765Z'
+              }
+            }
+          }
+        }
       ]
     }
   })
