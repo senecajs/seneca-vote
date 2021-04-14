@@ -27,7 +27,7 @@ describe('message-level tests', () => {
 
   beforeEach(() => {
     test_spec = {
-      print: false,
+      print: true,
       pattern: 'sys:vote',
       data: {
         sys: {
@@ -58,7 +58,51 @@ describe('message-level tests', () => {
               poll_stats: { num_upvotes: 1, num_downvotes: 0 }
             }
           }
-        }
+        },
+        {
+          pattern: 'vote:up',
+          params: {
+            fields: {
+              poll_id: 'does_not_exist',
+              voter_id: 'bar',
+              voter_type: 'sys/user'
+            }
+          },
+          out: {
+            ok: false,
+            why: 'Poll with id does_not_exist does not exist.'
+          }
+        },
+        {
+          pattern: 'vote:down',
+          params: {
+            fields: {
+              poll_id,
+              voter_id: 'bar',
+              voter_type: 'sys/user'
+            }
+          },
+          out: {
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+            }
+          }
+        },
+        {
+          pattern: 'vote:down',
+          params: {
+            fields: {
+              poll_id: 'does_not_exist',
+              voter_id: 'bar',
+              voter_type: 'sys/user'
+            }
+          },
+          out: {
+            ok: false,
+            why: 'Poll with id does_not_exist does not exist.'
+          }
+        },
       ]
     }
   })
