@@ -3,11 +3,13 @@ const Vote = require('../../entities/sys/vote')
 const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
 const { lock } = require('../../lib/lock')
+const PluginOptions = require('../../plugin_options')
 
 class OpenPollService {
-  static async openPoll(args, ctx) {
+  static async openPoll(args, ctx, opts = {}) {
     Assert.object(args, 'args')
     Assert.object(ctx, 'ctx')
+    Assert.object(opts, 'opts')
 
     const seneca = fetchProp(ctx, 'seneca')
     const poll_title = fetchProp(args, 'poll_title', Assert.string)
@@ -33,7 +35,7 @@ class OpenPollService {
       const new_poll = await poll_entity.load$(poll_attributes)
 
       return new_poll
-    }, { disabled: false })
+    }, { disabled: PluginOptions.areLocksDisabled(opts) })
   }
 }
 

@@ -22,7 +22,7 @@ module.exports = function (opts = {}) {
       const poll_title = fetchProp(safe_params, ['fields', 'title'], Assert.string)
 
       const opened_poll = await OpenPollService
-        .openPoll({ poll_title }, { seneca: this })
+        .openPoll({ poll_title }, { seneca: this }, opts)
 
       return reply(null, Reply.ok({
         data: { poll: opened_poll.data$(false) }

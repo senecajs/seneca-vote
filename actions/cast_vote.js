@@ -33,10 +33,10 @@ module.exports = function (opts = {}) {
         poll_id,
         voter_id,
         voter_type
-      }, { seneca: this })
+      }, { seneca: this }, opts)
 
       const poll_stats = await GetVoteStatsForPollService
-        .getVoteStatsForPoll({ poll_id }, { seneca: this })
+        .getVoteStatsForPoll({ poll_id }, { seneca: this }, opts)
 
 
       return reply(null, Reply.ok({
