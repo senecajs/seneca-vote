@@ -4,11 +4,13 @@ const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
 const { lock } = require('../../lib/lock')
 const { NotFoundError } = require('../../lib/errors')
+const PluginOptions = require('../../plugin_options')
 
 class CastVoteService {
-  static async castVote(args, ctx) {
+  static async castVote(args, ctx, opts = {}) {
     Assert.object(args, 'args')
     Assert.object(ctx, 'ctx')
+    Assert.object(opts, 'opts')
 
     const seneca = fetchProp(ctx, 'seneca')
 
@@ -38,7 +40,7 @@ class CastVoteService {
         .save$()
 
       return
-    })
+    }, { disabled: PluginOptions.areLocksDisabled(opts) })
   }
 }
 

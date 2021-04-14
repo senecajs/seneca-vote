@@ -9,11 +9,19 @@ describe('the OpenPoll action', () => {
   let seneca
 
   beforeEach(() => {
-    seneca = Seneca({ log: 'test' })
+    seneca = makeSeneca()
+  })
+
+  function makeSeneca(args = {}) {
+    Assert.object(args, 'args')
+
+    const { vote_plugin_opts = {} } = args
+
+    return Seneca({ log: 'test' })
       .use(Entities)
       .use(SenecaPromisify)
-      .use(VotePlugin)
-  })
+      .use(VotePlugin, vote_plugin_opts)
+  }
 
   function senecaUnderTest(seneca, cb) {
     return seneca.test(cb)
@@ -118,7 +126,15 @@ describe('the OpenPoll action', () => {
     })
 
     describe('when bombarded with messages to create a poll with the same title', () => {
-      describe('when the lock is enabled', () => {
+      describe('when locks are enabled', () => {
+        let seneca
+
+        beforeEach(() => {
+          seneca = makeSeneca({
+            vote_plugin_opts: { locks_disabled: false }
+          })
+        })
+
         it('only creates one poll', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 

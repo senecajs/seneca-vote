@@ -198,6 +198,12 @@ When the poll does not exist:
 { ok: false, why: String, details?: { what: String? } }
 ```
 
+#### Plugin Options
+`locks_disabled : Boolean?`
+By default, this option is set to `true`, i.e. locks are disabled by default. If set
+to `false`, re-enabled locks which help prevent potential race conditionsin actions.  
+
+
 #### Dev Scripts
 `$ npm test`  
 Runs the automated tests.  
