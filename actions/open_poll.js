@@ -31,11 +31,9 @@ module.exports = function (opts = {}) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        const error_message = fetchProp(err, 'message')
-
         return reply(null, {
           ok: false,
-          why: error_message
+          why: 'invalid-field'
         })
       }
 

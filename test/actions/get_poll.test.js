@@ -33,7 +33,7 @@ describe('the GetPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: '"poll_id" is required'
+            why: 'invalid-field'
           })
 
           return done()
@@ -52,7 +52,7 @@ describe('the GetPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: 'Poll does not exist'
+            why: 'not-found'
           })
 
           return done()
