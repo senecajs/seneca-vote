@@ -18,7 +18,7 @@ module.exports = function (opts = {}) {
       const poll_id = fetchProp(safe_params, 'poll_id', Assert.string)
 
       const poll_entity = Poll.entity({ seneca: this })
-      const poll = await poll_entity.load$({ id$: poll_id })
+      const poll = await poll_entity.load$(poll_id)
 
       if (!poll) {
         return reply(null, {

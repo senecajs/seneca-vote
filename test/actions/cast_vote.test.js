@@ -5,7 +5,7 @@ const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
 const VotePlugin = require('../../')
 
-describe('the CastPoll action', () => {
+describe('the CastVote action', () => {
   let seneca
 
   beforeEach(() => {
