@@ -39,10 +39,9 @@ module.exports = function (opts = {}) {
         .getVoteStatsForPoll({ poll_id }, { seneca: this })
 
 
-      return reply(null, {
-        ok: true,
+      return reply(null, Reply.ok({
         data: { poll_stats }
-      })
+      }))
     } catch (err) {
       // TODO: DRY up this pattern.
       //

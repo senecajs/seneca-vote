@@ -24,10 +24,9 @@ module.exports = function (opts = {}) {
       const opened_poll = await OpenPollService
         .openPoll({ poll_title }, { seneca: this })
 
-      return reply(null, {
-        ok: true,
+      return reply(null, Reply.ok({
         data: { poll: opened_poll.data$(false) }
-      })
+      }))
     } catch (err) {
       // TODO: DRY up this pattern.
       //

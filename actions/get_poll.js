@@ -27,10 +27,9 @@ module.exports = function (opts = {}) {
         }))
       }
 
-      return reply(null, {
-        ok: true,
+      return reply(null, Reply.ok({
         data: { poll: poll.data$(false) }
-      })
+      }))
     } catch (err) {
       // TODO: DRY up this pattern.
       //
