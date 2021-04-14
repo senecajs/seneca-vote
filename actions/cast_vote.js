@@ -5,6 +5,7 @@ const { fetchProp } = require('../lib/utils')
 const { ValidationError, NotFoundError } = require('../lib/errors')
 const CastVoteService = require('../services/cast_vote')
 const GetVoteStatsForPollService = require('../services/get_vote_stats_for_poll')
+const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,vote:*', async function(msg, reply) {
@@ -46,21 +47,16 @@ module.exports = function (opts = {}) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        return reply(null, {
-          ok: false,
-          why: 'invalid-field'
-        })
+        return reply(null, await Reply.invalidFieldOfValidationError(err))
       }
 
       if (err instanceof NotFoundError) {
-        return reply(null, {
-          ok: false,
-          why: 'not-found'
-        })
+        return reply(null, await Reply.notFound({
+          details: { what: 'poll' }
+        }))
       }
 
       return reply(err)
     }
   })
 }
-
