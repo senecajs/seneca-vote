@@ -3,6 +3,7 @@ const Poll = require('../entities/sys/poll')
 const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError } = require('../lib/errors')
+const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,get:poll', async function (msg, reply) {
@@ -21,10 +22,9 @@ module.exports = function (opts = {}) {
       const poll = await poll_entity.load$(poll_id)
 
       if (!poll) {
-        return reply(null, {
-          ok: false,
-          why: 'not-found'
-        })
+        return reply(null, Reply.notFound({
+          details: { what: 'poll' }
+        }))
       }
 
       return reply(null, {
@@ -35,10 +35,7 @@ module.exports = function (opts = {}) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        return reply(null, {
-          ok: false,
-          why: 'invalid-field'
-        })
+        return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       return reply(err)

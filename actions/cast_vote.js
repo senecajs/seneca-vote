@@ -47,11 +47,11 @@ module.exports = function (opts = {}) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        return reply(null, await Reply.invalidFieldOfValidationError(err))
+        return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       if (err instanceof NotFoundError) {
-        return reply(null, await Reply.notFound({
+        return reply(null, Reply.notFound({
           details: { what: 'poll' }
         }))
       }

@@ -45,7 +45,11 @@ describe('the OpenPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: 'invalid-field'
+            why: 'invalid-field',
+            details: {
+              path: ['fields'],
+              why_exactly: 'required'
+            }
           })
 
           return done()
@@ -64,7 +68,11 @@ describe('the OpenPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: 'invalid-field'
+            why: 'invalid-field',
+            details: {
+              path: ['fields', 'title'],
+              why_exactly: 'required'
+            }
           })
 
           return done()

@@ -75,7 +75,11 @@ function upvoteWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: 'invalid-field'
+      why: 'invalid-field',
+      details: {
+        path: ['fields'],
+        why_exactly: 'required'
+      }
     }
   }
 }
@@ -114,7 +118,10 @@ function upvoteWhenPollDoesNotExist() {
     },
     out: {
       ok: false,
-      why: 'not-found'
+      why: 'not-found',
+      details: {
+        what: 'poll'
+      }
     }
   }
 }
@@ -125,7 +132,11 @@ function downvoteWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: 'invalid-field'
+      why: 'invalid-field',
+      details: {
+        path: ['fields'],
+        why_exactly: 'required'
+      }
     }
   }
 }
@@ -164,7 +175,10 @@ function downvoteWhenPollDoesNotExist() {
     },
     out: {
       ok: false,
-      why: 'not-found'
+      why: 'not-found',
+      details: {
+        what: 'poll'
+      }
     }
   }
 }

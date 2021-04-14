@@ -33,7 +33,11 @@ describe('the GetPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: 'invalid-field'
+            why: 'invalid-field',
+            details: {
+              path: ['poll_id'],
+              why_exactly: 'required'
+            }
           })
 
           return done()
@@ -52,7 +56,10 @@ describe('the GetPoll action', () => {
         .then(result => {
           expect(result).toEqual({
             ok: false,
-            why: 'not-found'
+            why: 'not-found',
+            details: {
+              what: 'poll'
+            }
           })
 
           return done()
