@@ -3,6 +3,7 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const SenecaMsgTest = require('seneca-msg-test')
+const Joi = SenecaMsgTest.Joi
 const { fetchProp } = require('./support/helpers')
 const VotePlugin = require('../')
 
@@ -43,141 +44,226 @@ describe('message-level tests', () => {
         }
       },
       calls: [
-        {
-          pattern: 'vote:up',
-          params: {},
-          out: {
-            ok: false,
-            why: '"fields" is required'
-          }
-        },
-        {
-          pattern: 'vote:up',
-          params: {
-            fields: {
-              poll_id,
-              voter_id: 'bar',
-              voter_type: 'sys/user'
-            }
-          },
-          out: {
-            ok: true,
-            data: {
-              poll_stats: { num_upvotes: 1, num_downvotes: 0 }
-            }
-          }
-        },
-        {
-          pattern: 'vote:up',
-          params: {
-            fields: {
-              poll_id: 'does_not_exist',
-              voter_id: 'bar',
-              voter_type: 'sys/user'
-            }
-          },
-          out: {
-            ok: false,
-            why: 'Poll with id does_not_exist does not exist.'
-          }
-        },
-        {
-          pattern: 'vote:down',
-          params: {},
-          out: {
-            ok: false,
-            why: '"fields" is required'
-          }
-        },
-        {
-          pattern: 'vote:down',
-          params: {
-            fields: {
-              poll_id,
-              voter_id: 'bar',
-              voter_type: 'sys/user'
-            }
-          },
-          out: {
-            ok: true,
-            data: {
-              poll_stats: { num_upvotes: 0, num_downvotes: 1 }
-            }
-          }
-        },
-        {
-          pattern: 'vote:down',
-          params: {
-            fields: {
-              poll_id: 'does_not_exist',
-              voter_id: 'bar',
-              voter_type: 'sys/user'
-            }
-          },
-          out: {
-            ok: false,
-            why: 'Poll with id does_not_exist does not exist.'
-          }
-        },
-
-        {
-          pattern: 'get:poll',
-          params: {},
-          out: {
-            ok: false,
-            why: '"poll_id" is required'
-          }
-        },
-        {
-          pattern: 'get:poll',
-          params: { poll_id },
-          out: {
-            ok: true,
-            data: {
-              poll: {
-                id: poll_id,
-                title: 'Best hairline of the Ist century A.D.',
-                created_at: '2021-04-14T01:02:00.765Z'
-              }
-            }
-          }
-        },
-        {
-          pattern: 'get:poll',
-          params: { poll_id: 'does_not_exist' },
-          out: {
-            ok: false,
-            why: 'Poll does not exist'
-          }
-        },
-
-        {
-          pattern: 'open:poll',
-          params: {
-            fields: {
-              title: 'Best hairline of the Ist century A.D.'
-            }
-          },
-          out: {
-            ok: true,
-            data: {
-              poll: {
-                id: poll_id,
-                title: 'Best hairline of the Ist century A.D.',
-                created_at: '2021-04-14T01:02:00.765Z'
-              }
-            }
-          }
-        }
+        upvoteWhenSomeParamsAreMissing(),
+        upvoteWhenSuccessful({ poll_id }),
+        upvoteWhenPollDoesNotExist(),
+        downvoteWhenSomeParamsAreMissing(),
+        downvoteWhenSuccessful({ poll_id }),
+        downvoteWhenPollDoesNotExist(),
+        getPollWhenPollIdParamIsMissing(),
+        getPollWhenSuccessful({ poll_id }),
+        getPollWhenPollDoesNotExist(),
+        openPollWhenSomeParamsAreMissing(),
+        openPollWhenAPollWithTheGivenTitleAlreadyExists({ poll_id }),
+        openPollWhenAPollWithTheGivenTitleDoesNotExist()
       ]
     }
   })
 
-  fit('is ok', done => { // fcs
+  it('is ok', done => {
     const seneca_under_test = senecaUnderTest(seneca, done)
     const runMsgTest = SenecaMsgTest(seneca_under_test, test_spec)
 
     runMsgTest().then(done).catch(done)
   })
 })
+
+
+function upvoteWhenSomeParamsAreMissing() {
+  return {
+    pattern: 'vote:up',
+    params: {},
+    out: {
+      ok: false,
+      why: '"fields" is required'
+    }
+  }
+}
+
+function upvoteWhenSuccessful(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'vote:up',
+    params: {
+      fields: {
+        poll_id,
+        voter_id: 'bar',
+        voter_type: 'sys/user'
+      }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
+      }
+    }
+  }
+}
+
+function upvoteWhenPollDoesNotExist() {
+  return {
+    pattern: 'vote:up',
+    params: {
+      fields: {
+        poll_id: 'does_not_exist',
+        voter_id: 'bar',
+        voter_type: 'sys/user'
+      }
+    },
+    out: {
+      ok: false,
+      why: 'Poll with id does_not_exist does not exist.'
+    }
+  }
+}
+
+function downvoteWhenSomeParamsAreMissing() {
+  return {
+    pattern: 'vote:down',
+    params: {},
+    out: {
+      ok: false,
+      why: '"fields" is required'
+    }
+  }
+}
+
+function downvoteWhenSuccessful(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'vote:down',
+    params: {
+      fields: {
+        poll_id,
+        voter_id: 'bar',
+        voter_type: 'sys/user'
+      }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+      }
+    }
+  }
+}
+
+function downvoteWhenPollDoesNotExist() {
+  return {
+    pattern: 'vote:down',
+    params: {
+      fields: {
+        poll_id: 'does_not_exist',
+        voter_id: 'bar',
+        voter_type: 'sys/user'
+      }
+    },
+    out: {
+      ok: false,
+      why: 'Poll with id does_not_exist does not exist.'
+    }
+  }
+}
+
+function getPollWhenPollIdParamIsMissing() {
+  return {
+    pattern: 'get:poll',
+    params: {},
+    out: {
+      ok: false,
+      why: '"poll_id" is required'
+    }
+  }
+}
+
+function getPollWhenSuccessful(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'get:poll',
+    params: { poll_id },
+    out: {
+      ok: true,
+      data: {
+        poll: {
+          id: poll_id,
+          title: 'Best hairline of the Ist century A.D.',
+          created_at: '2021-04-14T01:02:00.765Z'
+        }
+      }
+    }
+  }
+}
+
+function getPollWhenPollDoesNotExist() {
+  return {
+    pattern: 'get:poll',
+    params: { poll_id: 'does_not_exist' },
+    out: {
+      ok: false,
+      why: 'Poll does not exist'
+    }
+  }
+}
+
+function openPollWhenSomeParamsAreMissing() {
+  return {
+    pattern: 'open:poll',
+    params: {},
+    out: {
+      ok: false,
+      why: '"fields" is required'
+    }
+  }
+}
+
+function openPollWhenAPollWithTheGivenTitleAlreadyExists(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'open:poll',
+    params: {
+      fields: {
+        title: 'Best hairline of the Ist century A.D.'
+      }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll: {
+          id: poll_id,
+          title: 'Best hairline of the Ist century A.D.',
+          created_at: '2021-04-14T01:02:00.765Z'
+        }
+      }
+    }
+  }
+}
+
+function openPollWhenAPollWithTheGivenTitleDoesNotExist() {
+  return {
+    pattern: 'open:poll',
+    params: {
+      fields: {
+        title: 'Lorem Ipsum Dolor Sit Amet',
+      }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll: {
+          id: Joi.string().required(),
+          title: 'Lorem Ipsum Dolor Sit Amet',
+          created_at: Joi.date().iso().required()
+        }
+      }
+    }
+  }
+}
 
