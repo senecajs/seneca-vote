@@ -59,17 +59,21 @@ and downvotes are counted and included in the response.
 
 Upon successful upvote:
 ```js
-{ status: "success", data: { num_upvotes: Int!, num_downvotes: Int! } }
+{ ok: true, data: { num_upvotes: Int!, num_downvotes: Int! } }
 ```
 
 Upon failed validation of the request params:
 ```js
-{ status: "failed", error: { message: String? } }
+{
+  ok: false,
+  why: String,
+  details?: { path: Array<Any>?, why_exactly: String? }
+}
 ```
 
 When the poll does not exist:
 ```js
-{ status: "failed", error: { message: String? } }
+{ ok: false, why: String, details?: { what: String? } }
 ```
 
 ### Downvote Action
@@ -97,12 +101,16 @@ Upon successful downvote:
 
 Upon failed validation of the request params:
 ```js
-{ status: "failed", error: { message: String? } }
+{
+  ok: false,
+  why: String,
+  details?: { path: Array<Any>?, why_exactly: String? }
+}
 ```
 
 When the poll does not exist:
 ```js
-{ status: "failed", error: { message: String? } }
+{ ok: false, why: String, details?: { what: String? } }
 ```
 
 
@@ -140,7 +148,11 @@ Upon success:
 
 Upon failed validation of the request params:
 ```js
-{ status: "failed", error: { message: String? } }
+{
+  ok: false,
+  why: String,
+  details?: { path: Array<Any>?, why_exactly: String? }
+}
 ```
 
 ### Get Poll Action
@@ -174,12 +186,16 @@ Upon success:
 
 Upon failed validation of the request params:
 ```js
-{ status: "failed", error: { message: String? } }
+{
+  ok: false,
+  why: String,
+  details?: { path: Array<Any>?, why_exactly: String? }
+}
 ```
 
 When the poll does not exist:
 ```js
-{ status: "failed", error: { message: String? } }
+{ ok: false, why: String, details?: { what: String? } }
 ```
 
 #### Dev Scripts

@@ -3,6 +3,7 @@ const Poll = require('../entities/sys/poll')
 const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError } = require('../lib/errors')
+const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,get:poll', async function (msg, reply) {
@@ -21,26 +22,19 @@ module.exports = function (opts = {}) {
       const poll = await poll_entity.load$(poll_id)
 
       if (!poll) {
-        return reply(null, {
-          ok: false,
-          why: 'Poll does not exist'
-        })
+        return reply(null, Reply.notFound({
+          details: { what: 'poll' }
+        }))
       }
 
-      return reply(null, {
-        ok: true,
+      return reply(null, Reply.ok({
         data: { poll: poll.data$(false) }
-      })
+      }))
     } catch (err) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        const error_message = fetchProp(err, 'message')
-
-        return reply(null, {
-          ok: false,
-          why: error_message
-        })
+        return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       return reply(err)

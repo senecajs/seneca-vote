@@ -59,7 +59,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -81,7 +85,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.poll_id" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'poll_id'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -103,7 +111,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_id" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_id'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -125,7 +137,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_type" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_type'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -147,7 +163,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_type" must be [sys/user]'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_type'],
+                why_exactly: 'only'
+              }
             })
 
             return done()
@@ -175,7 +195,10 @@ describe('the CastVote action', () => {
           .then(async (result) => {
             expect(result).toEqual({
               ok: false,
-              why: `Poll with id ${fake_poll_id} does not exist.`
+              why: 'not-found',
+              details: {
+                what: 'poll'
+              }
             })
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
@@ -456,7 +479,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -478,7 +505,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.poll_id" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'poll_id'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -500,7 +531,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_id" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_id'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -522,7 +557,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_type" is required'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_type'],
+                why_exactly: 'required'
+              }
             })
 
             return done()
@@ -544,7 +583,11 @@ describe('the CastVote action', () => {
           .then(result => {
             expect(result).toEqual({
               ok: false,
-              why: '"fields.voter_type" must be [sys/user]'
+              why: 'invalid-field',
+              details: {
+                path: ['fields', 'voter_type'],
+                why_exactly: 'only'
+              }
             })
 
             return done()
@@ -572,7 +615,10 @@ describe('the CastVote action', () => {
           .then(async (result) => {
             expect(result).toEqual({
               ok: false,
-              why: `Poll with id ${fake_poll_id} does not exist.`
+              why: 'not-found',
+              details: {
+                what: 'poll'
+              }
             })
 
             expect(await countVotes(seneca_under_test)).toEqual(0)

@@ -4,6 +4,7 @@ const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError } = require('../lib/errors')
 const OpenPollService = require('../services/open_poll')
+const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
   this.add('sys:vote,open:poll', async function (msg, reply) {
@@ -23,20 +24,14 @@ module.exports = function (opts = {}) {
       const opened_poll = await OpenPollService
         .openPoll({ poll_title }, { seneca: this })
 
-      return reply(null, {
-        ok: true,
+      return reply(null, Reply.ok({
         data: { poll: opened_poll.data$(false) }
-      })
+      }))
     } catch (err) {
       // TODO: DRY up this pattern.
       //
       if (err instanceof ValidationError) {
-        const error_message = fetchProp(err, 'message')
-
-        return reply(null, {
-          ok: false,
-          why: error_message
-        })
+        return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       return reply(err)

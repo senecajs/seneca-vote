@@ -75,7 +75,11 @@ function upvoteWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: '"fields" is required'
+      why: 'invalid-field',
+      details: {
+        path: ['fields'],
+        why_exactly: 'required'
+      }
     }
   }
 }
@@ -114,7 +118,10 @@ function upvoteWhenPollDoesNotExist() {
     },
     out: {
       ok: false,
-      why: 'Poll with id does_not_exist does not exist.'
+      why: 'not-found',
+      details: {
+        what: 'poll'
+      }
     }
   }
 }
@@ -125,7 +132,11 @@ function downvoteWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: '"fields" is required'
+      why: 'invalid-field',
+      details: {
+        path: ['fields'],
+        why_exactly: 'required'
+      }
     }
   }
 }
@@ -164,7 +175,10 @@ function downvoteWhenPollDoesNotExist() {
     },
     out: {
       ok: false,
-      why: 'Poll with id does_not_exist does not exist.'
+      why: 'not-found',
+      details: {
+        what: 'poll'
+      }
     }
   }
 }
@@ -175,7 +189,7 @@ function getPollWhenPollIdParamIsMissing() {
     params: {},
     out: {
       ok: false,
-      why: '"poll_id" is required'
+      why: 'invalid-field'
     }
   }
 }
@@ -206,7 +220,7 @@ function getPollWhenPollDoesNotExist() {
     params: { poll_id: 'does_not_exist' },
     out: {
       ok: false,
-      why: 'Poll does not exist'
+      why: 'not-found'
     }
   }
 }
@@ -217,7 +231,7 @@ function openPollWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: '"fields" is required'
+      why: 'invalid-field'
     }
   }
 }
