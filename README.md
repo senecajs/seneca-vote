@@ -200,10 +200,25 @@ When the poll does not exist:
 
 #### Plugin Options
 `locks_disabled : Boolean?`
-By default, this option is set to `true`, i.e. locks are disabled by default. If set
-to `false`, re-enabled locks which help prevent potential race conditionsin actions.  
-
-
+By default, this option is set to `true`, i.e. locks are disabled by default.
+If set to `false`, re-enabled locks which help prevent potential race conditions
+in actions.  
+  
+During implementation work on seneca-vote, in order to meet certain MVP
+requirements, such as that there can only ever be a single poll record with the
+same title, - locks were implemented as part of seneca-vote to prevent race
+conditions, that may otherwise occur under high loads.  
+  
+It was ultimately decided to disable the locks by default in order to comply
+with the rest of the Seneca eco-system. Entity upserts are planned to be added
+to Seneca entities in the future. They will work as upserts normally do:  
+https://docs.mongodb.com/drivers/node/fundamentals/crud/write-operations/upsert/  
+https://www.postgresqltutorial.com/postgresql-upsert/  
+  
+Further work on the data model of seneca-vote is expected in order to both
+prevent race conditions and remain compliant with the rest of the Seneca
+eco-system.  
+  
 #### Dev Scripts
 `$ npm test`  
 Runs the automated tests.  
