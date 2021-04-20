@@ -11,7 +11,10 @@
     "build": "echo no-build"
   },
   "keywords": [],
-  "author": "",
+  "contributors": [
+    "Richard Rodger (http://richardrodger.com/)"
+  ],
+  "author": "Efim Bogdanovsky (https://github.com/lilsweetcaligula)",
   "license": "MIT",
   "dependencies": {
     "assert-plus": "1.0.0",
