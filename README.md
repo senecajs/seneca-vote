@@ -226,3 +226,12 @@ Runs the automated tests.
 `$ npm run check-coverage`  
 Generates a test coverage report.  
 
+`$ npm run reset`
+Sometimes when the project starts acting weird, the first go-to solution may be
+to go ahead and refresh (i.e. reinstall) the packages used in the project. This
+command does just that.
+
+`$ npm run clean`
+Normally this command is not meant to be invoked explicitly, and is generally
+meant for consumption by other scripts in the project.
+
