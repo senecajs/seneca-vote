@@ -2,7 +2,6 @@ const Assert = require('assert-plus')
 const Vote = require('../../entities/sys/vote')
 const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
-const { lock } = require('../../lib/lock')
 const { NotFoundError } = require('../../lib/errors')
 const PluginOptions = require('../../plugin_options')
 
@@ -19,28 +18,26 @@ class CastVoteService {
     const poll_id = fetchProp(args, 'poll_id')
     const vote_type = fetchProp(args, 'vote_type')
 
-    return await lock(async () => {
-      const poll = await Poll.entity({ seneca }).load$(poll_id)
+    const poll = await Poll.entity({ seneca }).load$(poll_id)
 
-      if (!poll) {
-        throw new NotFoundError(`Poll with id ${poll_id} does not exist.`)
-      }
+    if (!poll) {
+      throw new NotFoundError(`Poll with id ${poll_id} does not exist.`)
+    }
 
-      const vote_attributes = {
-        poll_id,
-        voter_id,
-        voter_type,
-        type: vote_type,
-        created_at: new Date()
-      }
+    const vote_attributes = {
+      poll_id,
+      voter_id,
+      voter_type,
+      type: vote_type,
+      created_at: new Date()
+    }
 
-      const _new_vote = await Vote.entity({ seneca })
-        .make$()
-        .data$(vote_attributes)
-        .save$()
+    const _new_vote = await Vote.entity({ seneca })
+      .make$()
+      .data$(vote_attributes)
+      .save$()
 
-      return
-    }, { disabled: PluginOptions.areLocksDisabled(opts) })
+    return
   }
 }
 

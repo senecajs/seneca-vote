@@ -193,7 +193,7 @@ describe('the OpenPoll action', () => {
           })
         })
 
-        fit('does not result in a race condition', done => { // fcs
+        it('does not result in a race condition', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
           const num_calls = 3
 
