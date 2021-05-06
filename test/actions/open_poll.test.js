@@ -15,12 +15,10 @@ describe('the OpenPoll action', () => {
   function makeSeneca(args = {}) {
     Assert.object(args, 'args')
 
-    const { vote_plugin_opts = {} } = args
-
     return Seneca({ log: 'test' })
       .use(Entities)
       .use(SenecaPromisify)
-      .use(VotePlugin, vote_plugin_opts)
+      .use(VotePlugin)
   }
 
   function senecaUnderTest(seneca, cb) {
@@ -158,57 +156,28 @@ describe('the OpenPoll action', () => {
         })
       }
 
-      describe('when locks are enabled', () => {
-        let seneca
 
-        beforeEach(() => {
-          seneca = makeSeneca({
-            vote_plugin_opts: { locks_disabled: false }
-          })
-        })
+      let seneca
 
-        it('only creates one poll', done => {
-          const seneca_under_test = senecaUnderTest(seneca, done)
-
-          countPolls(seneca_under_test)
-            .then(num_polls_initially => {
-              Assert.strictEqual(0, num_polls_initially)
-            })
-            .then(() => bombardOpenPolls({ seneca, num_calls: 3 }))
-            .then(async () => {
-              expect(await countPolls(seneca_under_test)).toEqual(1)
-
-              return done()
-            })
-            .catch(done)
-        })
+      beforeEach(() => {
+        seneca = makeSeneca()
       })
 
-      describe('when locks are disabled', () => {
-        let seneca
+      it('does not result in a race condition', done => {
+        const seneca_under_test = senecaUnderTest(seneca, done)
+        const num_calls = 3
 
-        beforeEach(() => {
-          seneca = makeSeneca({
-            vote_plugin_opts: { locks_disabled: true }
+        countPolls(seneca_under_test)
+          .then(num_polls_initially => {
+            Assert.strictEqual(0, num_polls_initially)
           })
-        })
+          .then(() => bombardOpenPolls({ seneca, num_calls }))
+          .then(async () => {
+            expect(await countPolls(seneca_under_test)).toEqual(1)
 
-        it('does not result in a race condition', done => {
-          const seneca_under_test = senecaUnderTest(seneca, done)
-          const num_calls = 3
-
-          countPolls(seneca_under_test)
-            .then(num_polls_initially => {
-              Assert.strictEqual(0, num_polls_initially)
-            })
-            .then(() => bombardOpenPolls({ seneca, num_calls }))
-            .then(async () => {
-              expect(await countPolls(seneca_under_test)).toEqual(1)
-
-              return done()
-            })
-            .catch(done)
-        })
+            return done()
+          })
+          .catch(done)
       })
     })
   })

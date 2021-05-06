@@ -2,7 +2,6 @@ const Assert = require('assert-plus')
 const Vote = require('../../entities/sys/vote')
 const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
-const PluginOptions = require('../../plugin_options')
 
 class OpenPollService {
   static async openPoll(args, ctx, opts = {}) {

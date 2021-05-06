@@ -3,7 +3,6 @@ const Vote = require('../../entities/sys/vote')
 const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
 const { NotFoundError } = require('../../lib/errors')
-const PluginOptions = require('../../plugin_options')
 
 class CastVoteService {
   static async castVote(args, ctx, opts = {}) {
