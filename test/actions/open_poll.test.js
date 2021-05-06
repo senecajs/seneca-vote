@@ -193,7 +193,7 @@ describe('the OpenPoll action', () => {
           })
         })
 
-        it('results in a race condition', done => {
+        fit('does not result in a race condition', done => { // fcs
           const seneca_under_test = senecaUnderTest(seneca, done)
           const num_calls = 3
 
@@ -203,7 +203,7 @@ describe('the OpenPoll action', () => {
             })
             .then(() => bombardOpenPolls({ seneca, num_calls }))
             .then(async () => {
-              expect(await countPolls(seneca_under_test)).toEqual(num_calls)
+              expect(await countPolls(seneca_under_test)).toEqual(1)
 
               return done()
             })
