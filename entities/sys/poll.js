@@ -1,6 +1,5 @@
 const Assert = require('assert-plus')
 const { fetchProp } = require('../../lib/utils')
-const Shapes = require('../../lib/shapes')
 
 class Poll {
   static entity(args) {

@@ -11,7 +11,7 @@ class GetVoteStats {
     const num_upvotes = countMatching({ type: Vote.TYPE_UP() }, current_votes)
     const num_downvotes = countMatching({ type: Vote.TYPE_DOWN() }, current_votes)
 
-    return { num_upvotes, num_downvotes }
+    return GetVoteStats.Shapes.stats({ num_upvotes, num_downvotes })
 
 
     function currentVotesForPoll(args, ctx) {
@@ -68,6 +68,15 @@ class GetVoteStats {
     function desc(cmp) {
       return (x, y) => -1 * cmp(x, y)
     }
+  }
+}
+
+GetVoteStats.Shapes = class {
+  static stats(data) {
+    Assert.number(data.num_upvotes, 'data.num_upvotes')
+    Assert.number(data.num_downvotes, 'data.num_downvotes')
+
+    return data
   }
 }
 
