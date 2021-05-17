@@ -408,7 +408,7 @@ fdescribe('the CastVote action', () => { // fcs
       })
 
       describe('when the voter is upvoting on this poll for the first time', () => {
-        it('casts a new upvote', done => {
+        fit('casts a new upvote', done => { // fcs
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -436,14 +436,16 @@ fdescribe('the CastVote action', () => { // fcs
               const vote = await seneca.entity('sys/vote').load$({ poll_id })
               Assert.object(vote, 'vote')
 
-              expect(vote).toEqual(jasmine.objectContaining({
+              expect(vote.entity$).toEqual('-/sys/vote')
+
+              expect(vote.data$(false)).toEqual({
                 id: jasmine.any(String),
                 type: 'up',
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
                 created_at: jasmine.any(Date)
-              }))
+              })
 
               return done()
             })
@@ -830,7 +832,7 @@ fdescribe('the CastVote action', () => { // fcs
       })
 
       describe('when the voter is downvoting on this poll for the first time', () => {
-        it('casts a new downvote', done => {
+        fit('casts a new downvote', done => { // fcs
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -858,14 +860,16 @@ fdescribe('the CastVote action', () => { // fcs
               const vote = await seneca.entity('sys/vote').load$({ poll_id })
               Assert.object(vote, 'vote')
 
-              expect(vote).toEqual(jasmine.objectContaining({
+              expect(vote.entity$).toEqual('-/sys/vote')
+
+              expect(vote.data$(false)).toEqual({
                 id: jasmine.any(String),
                 type: 'down',
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
                 created_at: jasmine.any(Date)
-              }))
+              })
 
               return done()
             })
