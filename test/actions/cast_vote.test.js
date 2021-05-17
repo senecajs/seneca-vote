@@ -444,6 +444,8 @@ fdescribe('the CastVote action', () => { // fcs
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
+                kind: jasmine.any(String),
+                code: jasmine.any(String),
                 created_at: jasmine.any(Date)
               })
 
@@ -868,6 +870,8 @@ fdescribe('the CastVote action', () => { // fcs
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
+                kind: jasmine.any(String),
+                code: jasmine.any(String),
                 created_at: jasmine.any(Date)
               })
 

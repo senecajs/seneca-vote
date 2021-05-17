@@ -18,7 +18,9 @@ module.exports = function (opts = {}) {
         fields: joi.object({
           poll_id: joi.string().max(64).required(),
           voter_id: joi.string().max(64).required(),
-          voter_type: joi.valid('sys/user').required()
+          voter_type: joi.valid('sys/user').required(),
+          kind: joi.string().max(64).required(),
+          code: joi.string().max(64).required()
         }).required()
       }).unknown(), { stripUnknown: true })
 
@@ -27,12 +29,16 @@ module.exports = function (opts = {}) {
       const poll_id = fetchProp(safe_params, ['fields', 'poll_id'])
       const voter_id = fetchProp(safe_params, ['fields', 'voter_id'])
       const voter_type = fetchProp(safe_params, ['fields', 'voter_type'])
+      const vote_kind = fetchProp(safe_params, ['fields', 'kind'])
+      const vote_code = fetchProp(safe_params, ['fields', 'code'])
 
       await CastVoteService.castVote({
         vote_type,
         poll_id,
         voter_id,
-        voter_type
+        voter_type,
+        vote_kind,
+        vote_code
       }, { seneca: this }, opts)
 
       const poll_stats = await GetVoteStatsForPollService

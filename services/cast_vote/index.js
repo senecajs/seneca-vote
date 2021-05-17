@@ -16,6 +16,8 @@ class CastVoteService {
     const voter_type = fetchProp(args, 'voter_type')
     const poll_id = fetchProp(args, 'poll_id')
     const vote_type = fetchProp(args, 'vote_type')
+    const vote_kind = fetchProp(args, 'vote_kind')
+    const vote_code = fetchProp(args, 'vote_code')
 
     const poll = await Poll.entity({ seneca }).load$(poll_id)
 
@@ -28,6 +30,8 @@ class CastVoteService {
       voter_id,
       voter_type,
       type: vote_type,
+      kind: vote_kind,
+      code: vote_code,
       created_at: new Date()
     }
 
