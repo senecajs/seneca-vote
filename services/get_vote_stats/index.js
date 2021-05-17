@@ -15,14 +15,16 @@ class GetVoteStats {
 
 
     function currentVotesForPoll(args, ctx) {
-      Assert.object(args, 'args')
       Assert.object(ctx, 'ctx')
-
       const seneca = fetchProp(ctx, 'seneca')
+
+      Assert.object(args, 'args')
       const poll_id = fetchProp(args, 'poll_id')
+      const vote_kind = fetchProp(args, 'vote_kind')
+      const vote_code = fetchProp(args, 'vote_code')
 
       return Vote.entity({ seneca })
-        .list$({ poll_id })
+        .list$({ poll_id, kind: vote_kind, code: vote_code })
         .then(groupVotesByVoter)
         .then(votes_by_voter => {
           return votes_by_voter.map(votes => {

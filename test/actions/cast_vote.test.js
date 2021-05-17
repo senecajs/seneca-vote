@@ -6,7 +6,7 @@ const { fetchProp, yesterday } = require('../support/helpers')
 const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 
-fdescribe('the CastVote action', () => { // fcs
+describe('the CastVote action', () => {
   let seneca
 
   beforeEach(() => {

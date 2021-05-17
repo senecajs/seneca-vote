@@ -2,6 +2,7 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
+const Faker = require('faker')
 const Fixtures = require('../../support/fixtures')
 const { fetchProp, yesterday, now } = require('../../support/helpers')
 const GetVoteStats = require('../../../services/get_vote_stats')
@@ -19,21 +20,37 @@ fdescribe('the GetVoteStats service', () => { // fcs
     return seneca.test(cb)
   }
 
-  describe('an upvote exists for the poll', () => {
-    let poll_id
 
-    beforeEach(async () => {
-      const poll = await seneca.make('sys/poll')
-        .data$(Fixtures.poll())
-        .save$()
+  let poll_id
 
-      poll_id = fetchProp(poll, 'id')
-    })
+  beforeEach(async () => {
+    const poll = await seneca.make('sys/poll')
+      .data$(Fixtures.poll())
+      .save$()
+
+    poll_id = fetchProp(poll, 'id')
+  })
+
+  describe('requested vote "code" mismatches with the one in the existing vote', () => {
+    const vote_kind = 'blue'
+
+    function validParams(overrides = {}) {
+      return {
+        vote_kind,
+        vote_code: Faker.random.alphaNumeric(8),
+        poll_id: Faker.random.alphaNumeric(8),
+        ...overrides
+      }
+    }
+
+    function voteFixture(overrides = {}) {
+      return Fixtures.vote({ kind: vote_kind, ...overrides })
+    }
 
     describe('an upvote exists for the poll', () => {
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({ type: 'up', poll_id }))
+          .data$(voteFixture({ type: 'up', poll_id, code: 'green' }))
           .save$()
       })
 
@@ -41,7 +58,88 @@ fdescribe('the GetVoteStats service', () => { // fcs
         const si = senecaUnderTest(seneca, done)
 
         GetVoteStats
-          .forPoll({ poll_id }, { seneca: si })
+          .forPoll(validParams({ poll_id, vote_code: 'yellow' }), { seneca: si })
+          .then(result => {
+            expect(result).toEqual(jasmine.objectContaining({
+              num_upvotes: 0,
+              num_downvotes: 0
+            }))
+            return done()
+          })
+          .catch(done)
+      })
+    })
+  })
+
+  describe('requested vote "kind" mismatches with the one in the existing vote', () => {
+    const vote_code = 'jupiter'
+
+    function validParams(overrides = {}) {
+      return {
+        vote_code,
+        vote_kind: Faker.random.alphaNumeric(8),
+        poll_id: Faker.random.alphaNumeric(8),
+        ...overrides
+      }
+    }
+
+    function voteFixture(overrides = {}) {
+      return Fixtures.vote({ kind: vote_code, ...overrides })
+    }
+
+    describe('an upvote exists for the poll', () => {
+      beforeEach(async () => {
+        await seneca.make('sys/vote')
+          .data$(voteFixture({ type: 'up', poll_id, kind: 'pluto' }))
+          .save$()
+      })
+
+      it('returns correct vote counts', done => {
+        const si = senecaUnderTest(seneca, done)
+
+        GetVoteStats
+          .forPoll(validParams({ poll_id, vote_kind: 'saturn' }), { seneca: si })
+          .then(result => {
+            expect(result).toEqual(jasmine.objectContaining({
+              num_upvotes: 0,
+              num_downvotes: 0
+            }))
+            return done()
+          })
+          .catch(done)
+      })
+    })
+  })
+
+  describe('all votes have the same "code" and "kind"', () => {
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    function validParams(overrides = {}) {
+      return {
+        vote_kind,
+        vote_code,
+        poll_id: Faker.random.alphaNumeric(8),
+        ...overrides
+      }
+    }
+
+    function voteFixture(overrides = {}) {
+      return Fixtures.vote({ kind: vote_kind, code: vote_code, ...overrides })
+    }
+
+    describe('an upvote exists for the poll', () => {
+      beforeEach(async () => {
+        await seneca.make('sys/vote')
+          .data$(voteFixture({ type: 'up', poll_id }))
+          .save$()
+      })
+
+      it('returns correct vote counts', done => {
+        const si = senecaUnderTest(seneca, done)
+
+        GetVoteStats
+          .forPoll(validParams({ poll_id }), { seneca: si })
           .then(result => {
             expect(result).toEqual(jasmine.objectContaining({
               num_upvotes: 1,
@@ -55,7 +153,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
     describe('a downvote exists for the poll', () => {
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({ type: 'down', poll_id }))
+          .data$(voteFixture({ type: 'down', poll_id }))
           .save$()
       })
 
@@ -63,7 +161,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
         const si = senecaUnderTest(seneca, done)
 
         GetVoteStats
-          .forPoll({ poll_id }, { seneca: si })
+          .forPoll(validParams({ poll_id }), { seneca: si })
           .then(result => {
             expect(result).toEqual(jasmine.objectContaining({
               num_upvotes: 0,
@@ -78,7 +176,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
     describe('a downvote exists for another poll', () => {
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({ type: 'down' }))
+          .data$(voteFixture({ type: 'down' }))
           .save$()
       })
 
@@ -86,7 +184,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
         const si = senecaUnderTest(seneca, done)
 
         GetVoteStats
-          .forPoll({ poll_id }, { seneca: si })
+          .forPoll(validParams({ poll_id }), { seneca: si })
           .then(result => {
             expect(result).toEqual(jasmine.objectContaining({
               num_upvotes: 0,
@@ -101,13 +199,13 @@ fdescribe('the GetVoteStats service', () => { // fcs
     describe('a voter upvoted on the requested poll, and downvoted on another', () => {
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({ type: 'up', poll_id }))
+          .data$(voteFixture({ type: 'up', poll_id }))
           .save$()
       })
 
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({ type: 'down' }))
+          .data$(voteFixture({ type: 'down' }))
           .save$()
       })
 
@@ -115,7 +213,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
         const si = senecaUnderTest(seneca, done)
 
         GetVoteStats
-          .forPoll({ poll_id }, { seneca: si })
+          .forPoll(validParams({ poll_id }), { seneca: si })
           .then(result => {
             expect(result).toEqual(jasmine.objectContaining({
               num_upvotes: 1,
@@ -132,7 +230,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({
+          .data$(voteFixture({
             type: 'up',
             poll_id,
             voter_id,
@@ -143,7 +241,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({
+          .data$(voteFixture({
             type: 'down',
             poll_id,
             voter_id,
@@ -158,7 +256,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 0,
@@ -175,7 +273,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({ type: 'up', poll_id, voter_id: another_voter_id }))
+            .data$(voteFixture({ type: 'up', poll_id, voter_id: another_voter_id }))
             .save$()
         })
 
@@ -184,7 +282,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 1,
@@ -200,7 +298,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({ type: 'down', poll_id, voter_id: another_voter_id }))
+            .data$(voteFixture({ type: 'down', poll_id, voter_id: another_voter_id }))
             .save$()
         })
 
@@ -209,7 +307,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 0,
@@ -226,7 +324,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'up',
               poll_id,
               voter_id: another_voter_id,
@@ -237,7 +335,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'down',
               poll_id,
               voter_id: another_voter_id,
@@ -250,7 +348,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 0,
@@ -267,7 +365,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'down',
               poll_id,
               voter_id: another_voter_id,
@@ -278,7 +376,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'up',
               poll_id,
               voter_id: another_voter_id,
@@ -291,7 +389,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 1,
@@ -309,7 +407,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({
+          .data$(voteFixture({
             type: 'down',
             poll_id,
             voter_id,
@@ -320,7 +418,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
       beforeEach(async () => {
         await seneca.make('sys/vote')
-          .data$(Fixtures.vote({
+          .data$(voteFixture({
             type: 'up',
             poll_id,
             voter_id,
@@ -335,7 +433,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 1,
@@ -352,7 +450,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({ type: 'up', poll_id, voter_id: another_voter_id }))
+            .data$(voteFixture({ type: 'up', poll_id, voter_id: another_voter_id }))
             .save$()
         })
 
@@ -361,7 +459,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 2,
@@ -377,7 +475,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({ type: 'down', poll_id, voter_id: another_voter_id }))
+            .data$(voteFixture({ type: 'down', poll_id, voter_id: another_voter_id }))
             .save$()
         })
 
@@ -386,7 +484,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 1,
@@ -403,7 +501,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'up',
               poll_id,
               voter_id: another_voter_id,
@@ -414,7 +512,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'down',
               poll_id,
               voter_id: another_voter_id,
@@ -427,7 +525,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 1,
@@ -444,7 +542,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'down',
               poll_id,
               voter_id: another_voter_id,
@@ -455,7 +553,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
 
         beforeEach(async () => {
           await seneca.make('sys/vote')
-            .data$(Fixtures.vote({
+            .data$(voteFixture({
               type: 'up',
               poll_id,
               voter_id: another_voter_id,
@@ -468,7 +566,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
           const si = senecaUnderTest(seneca, done)
 
           GetVoteStats
-            .forPoll({ poll_id }, { seneca: si })
+            .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
                 num_upvotes: 2,
@@ -486,7 +584,7 @@ fdescribe('the GetVoteStats service', () => { // fcs
         const si = senecaUnderTest(seneca, done)
 
         GetVoteStats
-          .forPoll({ poll_id }, { seneca: si })
+          .forPoll(validParams({ poll_id }), { seneca: si })
           .then(result => {
             expect(result).toEqual(jasmine.objectContaining({
               num_upvotes: 0,

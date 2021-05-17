@@ -28,7 +28,7 @@ module.exports = function (opts = {}) {
       }, { seneca: this }, opts)
 
       const poll_stats = await GetVoteStats
-        .forPoll({ poll_id }, { seneca: this }, opts)
+        .forPoll({ poll_id, vote_kind, vote_code }, { seneca: this }, opts)
 
 
       return reply(null, Reply.ok({
