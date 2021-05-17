@@ -8,7 +8,7 @@ const GetVoteStatsForPollService = require('../services/get_vote_stats_for_poll'
 const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
-  this.add('sys:vote,vote:*', async function(msg, reply) {
+  this.add('sys:vote,vote:*', async function (msg, reply) {
     try {
       const vote_type = fetchProp(msg, 'vote')
       const safe_params = await validateMessage(msg)
@@ -27,8 +27,11 @@ module.exports = function (opts = {}) {
         vote_code
       }, { seneca: this }, opts)
 
-      const poll_stats = await GetVoteStatsForPollService
-        .getVoteStatsForPoll({ poll_id }, { seneca: this }, opts)
+      const poll_stats = await GetVoteStatsForPollService.getVoteStatsForPoll({
+        poll_id,
+        vote_kind,
+        vote_code
+      }, { seneca: this }, opts)
 
 
       return reply(null, Reply.ok({

@@ -408,7 +408,7 @@ fdescribe('the CastVote action', () => { // fcs
       })
 
       describe('when the voter is upvoting on this poll for the first time', () => {
-        fit('casts a new upvote', done => { // fcs
+        it('casts a new upvote', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
@@ -834,7 +834,7 @@ fdescribe('the CastVote action', () => { // fcs
       })
 
       describe('when the voter is downvoting on this poll for the first time', () => {
-        fit('casts a new downvote', done => { // fcs
+        it('casts a new downvote', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
           const params = validParams()
