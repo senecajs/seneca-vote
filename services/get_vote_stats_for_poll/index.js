@@ -9,7 +9,7 @@ class GetPollVoteStats {
     Assert.object(args, 'args')
 
     const poll_id = fetchProp(args, 'poll_id')
-    const current_votes = await currentVotesForPoll(poll_id, ctx)
+    const current_votes = await currentVotesMatching({ poll_id }, ctx)
 
     const num_upvotes = countMatching({ type: Vote.TYPE_UP() }, current_votes)
     const num_downvotes = countMatching({ type: Vote.TYPE_DOWN() }, current_votes)
@@ -17,13 +17,13 @@ class GetPollVoteStats {
     return { num_upvotes, num_downvotes }
 
 
-    function currentVotesForPoll(poll_id, ctx) {
-      Assert.string(poll_id, 'poll_id')
+    function currentVotesMatching(attrs, ctx) {
+      Assert.object(attrs, 'attrs')
       Assert.object(ctx, 'ctx')
 
       const seneca = fetchProp(ctx, 'seneca')
 
-      return Vote.entity({ seneca }).list$({ poll_id })
+      return Vote.entity({ seneca }).list$(attrs)
         .then(groupVotesByVoter)
         .then(votes_by_voter => {
           return votes_by_voter.map(votes => {
