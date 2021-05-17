@@ -3,6 +3,7 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
+const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 
 fdescribe('the CastVote action', () => { // fcs
@@ -216,13 +217,8 @@ fdescribe('the CastVote action', () => { // fcs
       let poll_id
 
       beforeEach(async () => {
-        // TODO: Use a factory.
-        //
         const poll = await seneca.entity('sys/poll')
-          .make$({
-            title: 'Lorem Ipsum',
-            created_at: new Date()
-          })
+          .make$(Fixtures.poll())
           .save$()
 
         poll_id = fetchProp(poll, 'id')
@@ -252,16 +248,14 @@ fdescribe('the CastVote action', () => { // fcs
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
         })
 
@@ -337,16 +331,14 @@ fdescribe('the CastVote action', () => { // fcs
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           const vote = await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'down',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
 
           vote_id = fetchProp(vote, 'id')
@@ -642,13 +634,8 @@ fdescribe('the CastVote action', () => { // fcs
       let poll_id
 
       beforeEach(async () => {
-        // TODO: Use a factory.
-        //
         const poll = await seneca.entity('sys/poll')
-          .make$({
-            title: 'Lorem Ipsum',
-            created_at: new Date()
-          })
+          .make$(Fixtures.poll())
           .save$()
 
         poll_id = fetchProp(poll, 'id')
@@ -678,16 +665,14 @@ fdescribe('the CastVote action', () => { // fcs
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           const vote = await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'down',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
 
           vote_id = fetchProp(vote, 'id')
@@ -765,16 +750,14 @@ fdescribe('the CastVote action', () => { // fcs
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
         })
 
