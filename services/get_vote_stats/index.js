@@ -4,12 +4,9 @@ const Vote = require('../../entities/sys/vote')
 const groupBy = require('lodash.groupby')
 const { fetchProp, countMatching } = require('../../lib/utils')
 
-class GetPollVoteStats {
-  static async getVoteStatsForPoll(args, ctx) {
-    Assert.object(args, 'args')
-
-    const poll_id = fetchProp(args, 'poll_id')
-    const current_votes = await currentVotesMatching({ poll_id }, ctx)
+class GetVoteStats {
+  static async forPoll(args, ctx) {
+    const current_votes = await currentVotesForPoll(args, ctx)
 
     const num_upvotes = countMatching({ type: Vote.TYPE_UP() }, current_votes)
     const num_downvotes = countMatching({ type: Vote.TYPE_DOWN() }, current_votes)
@@ -17,13 +14,15 @@ class GetPollVoteStats {
     return { num_upvotes, num_downvotes }
 
 
-    function currentVotesMatching(attrs, ctx) {
-      Assert.object(attrs, 'attrs')
+    function currentVotesForPoll(args, ctx) {
+      Assert.object(args, 'args')
       Assert.object(ctx, 'ctx')
 
       const seneca = fetchProp(ctx, 'seneca')
+      const poll_id = fetchProp(args, 'poll_id')
 
-      return Vote.entity({ seneca }).list$(attrs)
+      return Vote.entity({ seneca })
+        .list$({ poll_id })
         .then(groupVotesByVoter)
         .then(votes_by_voter => {
           return votes_by_voter.map(votes => {
@@ -70,4 +69,4 @@ class GetPollVoteStats {
   }
 }
 
-module.exports = GetPollVoteStats
+module.exports = GetVoteStats

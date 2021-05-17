@@ -4,7 +4,7 @@ const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError, NotFoundError } = require('../lib/errors')
 const CastVoteService = require('../services/cast_vote')
-const GetVoteStatsForPollService = require('../services/get_vote_stats_for_poll')
+const GetVoteStats = require('../services/get_vote_stats')
 const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
@@ -27,11 +27,8 @@ module.exports = function (opts = {}) {
         vote_code
       }, { seneca: this }, opts)
 
-      const poll_stats = await GetVoteStatsForPollService.getVoteStatsForPoll({
-        poll_id,
-        vote_kind,
-        vote_code
-      }, { seneca: this }, opts)
+      const poll_stats = await GetVoteStats
+        .forPoll({ poll_id }, { seneca: this }, opts)
 
 
       return reply(null, Reply.ok({
