@@ -10,20 +10,6 @@ const Reply = require('../lib/reply')
 module.exports = function (opts = {}) {
   this.add('sys:vote,vote:*', async function(msg, reply) {
     try {
-      // TODO:
-      // - [ ] Use seneca-joi
-      //
-      const validateMessage = Shapes.makeValidator(joi => joi.object({
-        vote: joi.string().valid(Vote.TYPE_UP(), Vote.TYPE_DOWN()).required(),
-        fields: joi.object({
-          poll_id: joi.string().max(64).required(),
-          voter_id: joi.string().max(64).required(),
-          voter_type: joi.valid('sys/user').required(),
-          kind: joi.string().max(64).required(),
-          code: joi.string().max(64).required()
-        }).required()
-      }).unknown(), { stripUnknown: true })
-
       const vote_type = fetchProp(msg, 'vote')
       const safe_params = await validateMessage(msg)
       const poll_id = fetchProp(safe_params, ['fields', 'poll_id'])
@@ -64,4 +50,24 @@ module.exports = function (opts = {}) {
       return reply(err)
     }
   })
+
+
+  const validateMessage = Shapes.makeValidator(joi => {
+    const idSchema = () => joi.string().max(64)
+    const entityNameSchema = () => joi.string().max(64)
+
+    return joi.object({
+      vote: joi.string().valid(Vote.TYPE_UP(), Vote.TYPE_DOWN()).required(),
+
+      fields: joi.object({
+        poll_id: idSchema().required(),
+        voter_id: joi.string().max(64).required(),
+        voter_type: joi.valid('sys/user').required(),
+        kind: joi.string().max(64).required(),
+        code: joi.string().max(64).required()
+      }).required(),
+
+      dependents: joi.object().pattern(entityNameSchema(), idSchema()).optional()
+    }).unknown()
+  }, { stripUnknown: true })
 }
