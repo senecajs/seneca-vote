@@ -1,13 +1,16 @@
 const Assert = require('assert-plus')
+const Faker = require('faker')
 const { fetchProp, yesterday } = require('./helpers')
 
 class Fixtures {
   static vote(overrides = {}) {
     return {
-      poll_id: 'fake_poll_id',
-      voter_id: 'fake_voter_id',
+      poll_id: Faker.random.alphaNumeric(8),
+      voter_id: Faker.random.alphaNumeric(8),
       voter_type: 'sys/user',
-      type: 'up',
+      type: eitherOf(['up', 'down']),
+      kind: Faker.random.alphaNumeric(8),
+      code: Faker.random.alphaNumeric(8),
       created_at: yesterday(),
       ...overrides
     }
@@ -15,11 +18,20 @@ class Fixtures {
 
   static poll(overrides = {}) {
     return {
-      title: 'lorem ipsum',
+      title: Faker.lorem.sentence(),
       created_at: new Date(),
       ...overrides
     }
   }
+}
+
+function eitherOf(ary) {
+  Assert.array(ary, 'ary')
+  Assert(ary.length > 0, 'nothing to choose from')
+
+  const rand = Math.random() * ary.length
+
+  return ary[Math.floor(rand)]
 }
 
 module.exports = Fixtures
