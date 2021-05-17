@@ -5,7 +5,7 @@ const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
 const VotePlugin = require('../../')
 
-describe('the CastVote action', () => {
+fdescribe('the CastVote action', () => { // fcs
   let seneca
 
   beforeEach(() => {
@@ -41,7 +41,9 @@ describe('the CastVote action', () => {
         fields: {
           poll_id: 'foo',
           voter_id: 'bar',
-          voter_type: 'sys/user'
+          voter_type: 'sys/user',
+          kind: 'red',
+          code: 'mars'
         }
       }
     }
@@ -461,7 +463,9 @@ describe('the CastVote action', () => {
         fields: {
           poll_id: 'foo',
           voter_id: 'bar',
-          voter_type: 'sys/user'
+          voter_type: 'sys/user',
+          kind: 'red',
+          code: 'mars'
         }
       }
     }
