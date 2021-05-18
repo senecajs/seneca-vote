@@ -77,9 +77,6 @@ module.exports = function (opts = {}) {
 
   const validateMessage = Shapes.makeValidator(joi => {
     const idSchema = () => joi.string().max(64)
-
-    // TODO: Make sure the entity name is well-formed (i.e. valid).
-    //
     const entityNameSchema = () => joi.string().max(64)
 
     return joi.object({
