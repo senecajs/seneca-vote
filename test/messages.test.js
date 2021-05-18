@@ -46,9 +46,11 @@ describe('message-level tests', () => {
       calls: [
         upvoteWhenSomeParamsAreMissing(),
         upvoteWhenSuccessful({ poll_id }),
+        upvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
         upvoteWhenPollDoesNotExist(),
         downvoteWhenSomeParamsAreMissing(),
         downvoteWhenSuccessful({ poll_id }),
+        downvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
         downvoteWhenPollDoesNotExist(),
         getPollWhenPollIdParamIsMissing(),
         getPollWhenSuccessful({ poll_id }),
@@ -94,8 +96,35 @@ function upvoteWhenSuccessful(args = {}) {
       fields: {
         poll_id,
         voter_id: 'bar',
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
       }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
+      }
+    }
+  }
+}
+
+function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'vote:up',
+    params: {
+      fields: {
+        poll_id,
+        voter_id: 'bar',
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
+      },
+      save_poll_rating_to: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
@@ -113,7 +142,9 @@ function upvoteWhenPollDoesNotExist() {
       fields: {
         poll_id: 'does_not_exist',
         voter_id: 'bar',
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
       }
     },
     out: {
@@ -151,8 +182,35 @@ function downvoteWhenSuccessful(args = {}) {
       fields: {
         poll_id,
         voter_id: 'bar',
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
       }
+    },
+    out: {
+      ok: true,
+      data: {
+        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+      }
+    }
+  }
+}
+
+function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
+  Assert.object(args, 'args')
+  const poll_id = fetchProp(args, 'poll_id')
+
+  return {
+    pattern: 'vote:down',
+    params: {
+      fields: {
+        poll_id,
+        voter_id: 'bar',
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
+      },
+      save_poll_rating_to: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
@@ -170,7 +228,9 @@ function downvoteWhenPollDoesNotExist() {
       fields: {
         poll_id: 'does_not_exist',
         voter_id: 'bar',
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
       }
     },
     out: {

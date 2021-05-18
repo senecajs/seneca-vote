@@ -8,7 +8,7 @@ const { fetchProp } = require('../../support/helpers')
 const SavePollRating = require('../../../services/save_poll_rating')
 const { NotFoundError } = require('../../../lib/errors')
 
-fdescribe('SavePollRating service', () => { // fcs
+describe('SavePollRating service', () => {
   let seneca
 
   beforeEach(() => {

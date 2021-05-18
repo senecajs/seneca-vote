@@ -7,7 +7,7 @@ const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 const SavePollRating = require('../../services/save_poll_rating')
 
-fdescribe('the CastVote action', () => { // fcs
+describe('the CastVote action', () => {
   let seneca
 
   beforeEach(() => {
