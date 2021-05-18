@@ -5,7 +5,7 @@ const groupBy = require('lodash.groupby')
 const { fetchProp, countMatching } = require('../../lib/utils')
 
 class GetVoteStats {
-  static async forPoll(args, ctx) {
+  static async forPoll(args, ctx, opts = {}) {
     const current_votes = await currentVotesForPoll(args, ctx)
 
     const num_upvotes = countMatching({ type: Vote.TYPE_UP() }, current_votes)
@@ -69,10 +69,20 @@ class GetVoteStats {
       return (x, y) => -1 * cmp(x, y)
     }
   }
+
+  static async pollRatingBasedOnStats(stats) {
+    Assert.object(stats, 'stats')
+
+    const num_upvotes = fetchProp(stats, 'num_upvotes')
+    const num_downvotes = fetchProp(stats, 'num_downvotes')
+
+    return num_upvotes - num_downvotes
+  }
 }
 
 GetVoteStats.Shapes = class {
   static stats(data) {
+    Assert.object(data, 'data')
     Assert.number(data.num_upvotes, 'data.num_upvotes')
     Assert.number(data.num_downvotes, 'data.num_downvotes')
 

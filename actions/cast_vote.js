@@ -5,6 +5,7 @@ const { fetchProp } = require('../lib/utils')
 const { ValidationError, NotFoundError } = require('../lib/errors')
 const CastVoteService = require('../services/cast_vote')
 const GetVoteStats = require('../services/get_vote_stats')
+const SavePollRating = require('../services/save_poll_rating')
 const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
@@ -17,6 +18,9 @@ module.exports = function (opts = {}) {
       const voter_type = fetchProp(safe_params, ['fields', 'voter_type'])
       const vote_kind = fetchProp(safe_params, ['fields', 'kind'])
       const vote_code = fetchProp(safe_params, ['fields', 'code'])
+
+      // TODO: Implement transactions.
+      //
 
       await CastVoteService.castVote({
         vote_type,
@@ -31,6 +35,17 @@ module.exports = function (opts = {}) {
         .forPoll({ poll_id, vote_kind, vote_code }, { seneca: this }, opts)
 
 
+      if ('save_poll_rating_to' in msg) {
+        const poll_rating = GetVoteStats.pollRatingBasedOnStats(poll_stats)
+        const save_poll_rating_to = fetchProp(msg, 'save_poll_rating_to')
+
+        await SavePollRating.toEntities({
+          rating: poll_rating,
+          entities: save_poll_rating_to
+        }, { seneca: this }, opts)
+      }
+
+
       return reply(null, Reply.ok({
         data: { poll_stats }
       }))
@@ -42,9 +57,15 @@ module.exports = function (opts = {}) {
       }
 
       if (err instanceof NotFoundError) {
-        return reply(null, Reply.notFound({
-          details: { what: 'poll' }
-        }))
+        const details = (() => {
+          if (typeof err.message === 'string') {
+            return { details: { what: err.message } }
+          }
+
+          return {}
+        })()
+
+        return reply(null, Reply.notFound(details))
       }
 
       return reply(err)
@@ -54,6 +75,9 @@ module.exports = function (opts = {}) {
 
   const validateMessage = Shapes.makeValidator(joi => {
     const idSchema = () => joi.string().max(64)
+
+    // TODO: Make sure the entity name is well-formed (i.e. valid).
+    //
     const entityNameSchema = () => joi.string().max(64)
 
     return joi.object({
@@ -67,7 +91,7 @@ module.exports = function (opts = {}) {
         code: joi.string().max(64).required()
       }).required(),
 
-      dependents: joi.object().pattern(entityNameSchema(), idSchema()).optional()
+      save_poll_rating_to: joi.object().pattern(entityNameSchema(), idSchema()).optional()
     }).unknown()
   }, { stripUnknown: true })
 }
