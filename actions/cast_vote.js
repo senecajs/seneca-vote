@@ -41,7 +41,9 @@ module.exports = function (opts = {}) {
 
         await SavePollRating.toEntities({
           rating: poll_rating,
-          entities: save_poll_rating_to
+          entities: save_poll_rating_to,
+          vote_kind,
+          vote_code
         }, { seneca: this }, opts)
       }
 

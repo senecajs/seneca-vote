@@ -22,7 +22,7 @@ class CastVoteService {
     const poll = await Poll.entity({ seneca }).load$(poll_id)
 
     if (!poll) {
-      throw new NotFoundError(`Poll with id ${poll_id} does not exist.`)
+      throw new NotFoundError('poll')
     }
 
     const vote_attributes = {

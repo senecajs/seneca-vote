@@ -8,7 +8,7 @@ const { fetchProp } = require('../../support/helpers')
 const SavePollRating = require('../../../services/save_poll_rating')
 const { NotFoundError } = require('../../../lib/errors')
 
-describe('SavePollRating service', () => {
+fdescribe('SavePollRating service', () => { // fcs
   let seneca
 
   beforeEach(() => {
@@ -21,7 +21,24 @@ describe('SavePollRating service', () => {
     return seneca.test(cb)
   }
 
-  fdescribe('toEntities', () => { // fcs
+
+  const vote_kind = 'red'
+  const vote_code = 'mars'
+  const save_to_field = '_rating'
+
+  const plugin_opts = {
+    dependents: {
+      [vote_kind]: {
+        [vote_code]: {
+          totals: {
+            'sys/poll': { field: save_to_field }
+          }
+        }
+      }
+    }
+  }
+
+  describe('toEntities', () => {
     describe('when an entity with the given id exists', () => {
       let poll_id
 
@@ -33,21 +50,106 @@ describe('SavePollRating service', () => {
         poll_id = fetchProp(poll, 'id')
       })
 
-      it('saves the rating to the entity', done => {
-        const seneca_under_test = senecaUnderTest(seneca, done)
+      describe('requested vote kind does not match the one specified in the plugin options', () => {
+        it('does not save the rating', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
 
-        const rating = 37
-        const entities = { 'sys/poll': poll_id }
+          const rating = 37
+          const entities = { 'sys/poll': poll_id }
 
-        SavePollRating.toEntities({ rating, entities }, { seneca: seneca_under_test })
-          .then(async () => {
-            const poll = await seneca.make('sys/poll').load$(poll_id)
+          SavePollRating.toEntities(
+            { rating, entities, vote_kind: 'nope', vote_code },
+            { seneca: seneca_under_test },
+            plugin_opts
+          )
+            .then(async () => {
+              const poll = await seneca.make('sys/poll').load$(poll_id)
 
-            expect(poll._rating).toEqual(rating)
+              expect(save_to_field in poll).toEqual(false)
 
-            return done()
-          })
-          .catch(done)
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('requested vote code does not match the one specified in the plugin options', () => {
+        it('does not save the rating', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          const rating = 37
+          const entities = { 'sys/poll': poll_id }
+
+          SavePollRating.toEntities(
+            { rating, entities, vote_kind, vote_code: 'nope' },
+            { seneca: seneca_under_test },
+            plugin_opts
+          )
+            .then(async () => {
+              const poll = await seneca.make('sys/poll').load$(poll_id)
+
+              expect(save_to_field in poll).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('when the requested entity is not listed in the plugin options', () => {
+        let vote_id
+
+        beforeEach(async () => {
+          const vote = await seneca.entity('sys/vote')
+            .make$(Fixtures.vote())
+            .save$()
+
+          vote_id = fetchProp(vote, 'id')
+        })
+
+        it('does not save the rating', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          const rating = 37
+          const entities = { 'sys/vote': vote_id }
+
+          SavePollRating.toEntities(
+            { rating, entities, vote_kind, vote_code },
+            { seneca: seneca_under_test },
+            plugin_opts
+          )
+            .then(async () => {
+              const vote = await seneca.make('sys/vote').load$(vote_id)
+
+              expect(save_to_field in vote).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('normally', () => {
+        it('saves the rating to the entity', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          const rating = 37
+          const entities = { 'sys/poll': poll_id }
+
+          SavePollRating.toEntities(
+            { rating, entities, vote_kind, vote_code },
+            { seneca: seneca_under_test },
+            plugin_opts
+          )
+            .then(async () => {
+              const poll = await seneca.make('sys/poll').load$(poll_id)
+
+              expect(poll[save_to_field]).toEqual(rating)
+
+              return done()
+            })
+            .catch(done)
+        })
       })
     })
 
@@ -58,7 +160,11 @@ describe('SavePollRating service', () => {
         const rating = 37
         const entities = { 'sys/poll': 'idonotexist' }
 
-        SavePollRating.toEntities({ rating, entities }, { seneca: seneca_under_test })
+        SavePollRating.toEntities(
+          { rating, entities, vote_kind, vote_code },
+          { seneca: seneca_under_test },
+          plugin_opts
+        )
           .then(async () => {
             done(new Error('Expected an error to be thrown'))
           })

@@ -7,15 +7,21 @@ const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 const SavePollRating = require('../../services/save_poll_rating')
 
-describe('the CastVote action', () => {
+fdescribe('the CastVote action', () => { // fcs
   let seneca
 
   beforeEach(() => {
-    seneca = Seneca({ log: 'test' })
+    seneca = makeSeneca()
+  })
+
+  function makeSeneca(opts = {}) {
+    const { vote_plugin_opts = {} } = opts
+
+    return Seneca({ log: 'test' })
       .use(Entities)
       .use(SenecaPromisify)
-      .use(VotePlugin)
-  })
+      .use(VotePlugin, vote_plugin_opts)
+  }
 
   function senecaUnderTest(seneca, cb) {
     return seneca.test(cb)
@@ -449,26 +455,90 @@ describe('the CastVote action', () => {
         })
       })
 
+      // NOTE: This use case has been tested in more detail in the tests for
+      // the delegatee utility.
+      //
       describe('when requested to save the rating to some entities', () => {
+        let seneca
+
+        const vote_kind = 'red'
+        const vote_code = 'mars'
+        const save_to_field = '_rating'
+
+        const vote_plugin_opts = {
+          dependents: {
+            [vote_kind]: {
+              [vote_code]: {
+                totals: {
+                  'sys/poll': { field: save_to_field }
+                }
+              }
+            }
+          }
+        }
+
         beforeEach(() => {
-          spyOn(SavePollRating, 'toEntities').and.callThrough()
+          seneca = makeSeneca({ vote_plugin_opts })
         })
 
+
+        beforeEach(() => {
+          const toEntities = SavePollRating.toEntities
+
+          spyOn(SavePollRating, 'toEntities').and.callFake((...args) => {
+            expect(args.length > 0).toEqual(true)
+
+            const plugin_opts_arg = args[args.length - 1]
+            expect(plugin_opts_arg).toEqual(vote_plugin_opts)
+
+            return toEntities(...args)
+          })
+        })
+
+
+        let poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          poll_id = fetchProp(poll, 'id')
+        })
+
+
+        let save_to_poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          save_to_poll_id = fetchProp(poll, 'id')
+        })
+
+
         describe('normally', () => {
-          it('delegates the rating-saving-logic to another utility', done => {
+          it('delegates the poll-rating-saving-logic to another utility', done => {
             const seneca_under_test = senecaUnderTest(seneca, done)
 
-            const params = validParams({ save_poll_rating_to: {} })
+
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+            })
+
             params.fields.poll_id = poll_id
 
-            const voter_id = 'hsfa7tbga3'
-            params.fields.voter_id = voter_id
 
             messageUpVote(seneca_under_test, params)
               .then(async (result) => {
                 expect(result.ok).toEqual(true)
-
                 expect(SavePollRating.toEntities).toHaveBeenCalled()
+
+                const poll = await seneca.make('sys/poll').load$(save_to_poll_id)
+                expect(save_to_field in poll).toEqual(true)
 
                 return done()
               })
@@ -477,14 +547,16 @@ describe('the CastVote action', () => {
         })
 
         describe('when no entity with a given id exists', () => {
-          it('delegates the rating-saving-logic to another utility', done => {
+          it('responds with an error', done => {
             const seneca_under_test = senecaUnderTest(seneca, done)
 
-            const params = validParams({ save_poll_rating_to: { 'sys/poll': 'idonotexist' } })
-            params.fields.poll_id = poll_id
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              save_poll_rating_to: { 'sys/poll': 'idonotexist' }
+            })
 
-            const voter_id = 'hsfa7tbga3'
-            params.fields.voter_id = voter_id
+            params.fields.poll_id = poll_id
 
             messageUpVote(seneca_under_test, params)
               .then(async (result) => {
@@ -918,60 +990,6 @@ describe('the CastVote action', () => {
               return done()
             })
             .catch(done)
-        })
-      })
-
-      describe('when requested to save the rating to some entities', () => {
-        beforeEach(() => {
-          spyOn(SavePollRating, 'toEntities').and.callThrough()
-        })
-
-        describe('normally', () => {
-          it('delegates the rating-saving-logic to another utility', done => {
-            const seneca_under_test = senecaUnderTest(seneca, done)
-
-            const params = validParams({ save_poll_rating_to: {} })
-            params.fields.poll_id = poll_id
-
-            const voter_id = 'hsfa7tbga3'
-            params.fields.voter_id = voter_id
-
-            messageDownVote(seneca_under_test, params)
-              .then(async (result) => {
-                expect(result.ok).toEqual(true)
-
-                expect(SavePollRating.toEntities).toHaveBeenCalled()
-
-                return done()
-              })
-              .catch(done)
-          })
-        })
-
-        describe('when no entity with a given id exists', () => {
-          it('delegates the rating-saving-logic to another utility', done => {
-            const seneca_under_test = senecaUnderTest(seneca, done)
-
-            const params = validParams({ save_poll_rating_to: { 'sys/poll': 'idonotexist' } })
-            params.fields.poll_id = poll_id
-
-            const voter_id = 'hsfa7tbga3'
-            params.fields.voter_id = voter_id
-
-            messageDownVote(seneca_under_test, params)
-              .then(async (result) => {
-                expect(result).toEqual({
-                  ok: false,
-                  why: 'not-found',
-                  details: { what: 'sys/poll' }
-                })
-
-                expect(SavePollRating.toEntities).toHaveBeenCalled()
-
-                return done()
-              })
-              .catch(done)
-          })
         })
       })
     })
