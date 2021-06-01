@@ -7,6 +7,10 @@ class TestHelpers {
     return moment(date).subtract(1, 'day').toDate()
   }
 
+  static now() {
+    return moment().toDate()
+  }
+
   static fetchProp(base, prop, assertType = (x, msg) => {}) {
     if (base === null || base === undefined) {
       Assert.fail('Object cannot be null or undefined.')

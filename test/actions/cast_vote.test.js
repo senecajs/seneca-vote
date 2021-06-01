@@ -3,17 +3,25 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
+const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
+const SavePollRating = require('../../services/save_poll_rating')
 
 describe('the CastVote action', () => {
   let seneca
 
   beforeEach(() => {
-    seneca = Seneca({ log: 'test' })
+    seneca = makeSeneca()
+  })
+
+  function makeSeneca(opts = {}) {
+    const { vote_plugin_opts = {} } = opts
+
+    return Seneca({ log: 'test' })
       .use(Entities)
       .use(SenecaPromisify)
-      .use(VotePlugin)
-  })
+      .use(VotePlugin, vote_plugin_opts)
+  }
 
   function senecaUnderTest(seneca, cb) {
     return seneca.test(cb)
@@ -36,13 +44,16 @@ describe('the CastVote action', () => {
       return seneca.post({ sys: 'vote', vote: 'up', ...params })
     }
 
-    function validParams() {
+    function validParams(overrides = {}) {
       return {
         fields: {
           poll_id: 'foo',
           voter_id: 'bar',
-          voter_type: 'sys/user'
-        }
+          voter_type: 'sys/user',
+          kind: 'red',
+          code: 'mars'
+        },
+        ...overrides
       }
     }
 
@@ -214,13 +225,8 @@ describe('the CastVote action', () => {
       let poll_id
 
       beforeEach(async () => {
-        // TODO: Use a factory.
-        //
         const poll = await seneca.entity('sys/poll')
-          .make$({
-            title: 'Lorem Ipsum',
-            created_at: new Date()
-          })
+          .make$(Fixtures.poll())
           .save$()
 
         poll_id = fetchProp(poll, 'id')
@@ -250,16 +256,14 @@ describe('the CastVote action', () => {
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
         })
 
@@ -335,16 +339,14 @@ describe('the CastVote action', () => {
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           const vote = await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'down',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
 
           vote_id = fetchProp(vote, 'id')
@@ -434,18 +436,142 @@ describe('the CastVote action', () => {
               const vote = await seneca.entity('sys/vote').load$({ poll_id })
               Assert.object(vote, 'vote')
 
-              expect(vote).toEqual(jasmine.objectContaining({
+              expect(vote.entity$).toEqual('-/sys/vote')
+
+              expect(vote.data$(false)).toEqual({
                 id: jasmine.any(String),
                 type: 'up',
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
+                kind: jasmine.any(String),
+                code: jasmine.any(String),
                 created_at: jasmine.any(Date)
-              }))
+              })
 
               return done()
             })
             .catch(done)
+        })
+      })
+
+      // NOTE: This use case has been tested in more detail in the tests for
+      // the delegatee utility.
+      //
+      describe('when requested to save the rating to some entities', () => {
+        let seneca
+
+        const vote_kind = 'red'
+        const vote_code = 'mars'
+        const save_to_field = '_rating'
+
+        const vote_plugin_opts = {
+          dependents: {
+            [vote_kind]: {
+              [vote_code]: {
+                totals: {
+                  'sys/poll': { field: save_to_field }
+                }
+              }
+            }
+          }
+        }
+
+        beforeEach(() => {
+          seneca = makeSeneca({ vote_plugin_opts })
+        })
+
+
+        beforeEach(() => {
+          const toEntities = SavePollRating.toEntities
+
+          spyOn(SavePollRating, 'toEntities').and.callFake((...args) => {
+            expect(args.length > 0).toEqual(true)
+
+            const plugin_opts_arg = args[args.length - 1]
+            expect(plugin_opts_arg).toEqual(vote_plugin_opts)
+
+            return toEntities(...args)
+          })
+        })
+
+
+        let poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          poll_id = fetchProp(poll, 'id')
+        })
+
+
+        let save_to_poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          save_to_poll_id = fetchProp(poll, 'id')
+        })
+
+
+        describe('normally', () => {
+          it('delegates the poll-rating-saving-logic to another utility', done => {
+            const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+            })
+
+            params.fields.poll_id = poll_id
+
+
+            messageUpVote(seneca_under_test, params)
+              .then(async (result) => {
+                expect(result.ok).toEqual(true)
+                expect(SavePollRating.toEntities).toHaveBeenCalled()
+
+                const poll = await seneca.make('sys/poll').load$(save_to_poll_id)
+                expect(save_to_field in poll).toEqual(true)
+
+                return done()
+              })
+              .catch(done)
+          })
+        })
+
+        describe('when no entity with a given id exists', () => {
+          it('responds with an error', done => {
+            const seneca_under_test = senecaUnderTest(seneca, done)
+
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              save_poll_rating_to: { 'sys/poll': 'idonotexist' }
+            })
+
+            params.fields.poll_id = poll_id
+
+            messageUpVote(seneca_under_test, params)
+              .then(async (result) => {
+                expect(result).toEqual({
+                  ok: false,
+                  why: 'not-found',
+                  details: { what: 'sys/poll' }
+                })
+
+                expect(SavePollRating.toEntities).toHaveBeenCalled()
+
+                return done()
+              })
+              .catch(done)
+          })
         })
       })
     })
@@ -456,13 +582,16 @@ describe('the CastVote action', () => {
       return seneca.post({ sys: 'vote', vote: 'down', ...params })
     }
 
-    function validParams() {
+    function validParams(overrides = {}) {
       return {
         fields: {
           poll_id: 'foo',
           voter_id: 'bar',
-          voter_type: 'sys/user'
-        }
+          voter_type: 'sys/user',
+          kind: 'red',
+          code: 'mars'
+        },
+        ...overrides
       }
     }
 
@@ -634,13 +763,8 @@ describe('the CastVote action', () => {
       let poll_id
 
       beforeEach(async () => {
-        // TODO: Use a factory.
-        //
         const poll = await seneca.entity('sys/poll')
-          .make$({
-            title: 'Lorem Ipsum',
-            created_at: new Date()
-          })
+          .make$(Fixtures.poll())
           .save$()
 
         poll_id = fetchProp(poll, 'id')
@@ -670,16 +794,14 @@ describe('the CastVote action', () => {
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           const vote = await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'down',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
 
           vote_id = fetchProp(vote, 'id')
@@ -757,16 +879,14 @@ describe('the CastVote action', () => {
         const voter_type = 'sys/user'
 
         beforeEach(async () => {
-          // TODO: Use a factory.
-          //
           await seneca.entity('sys/vote')
-            .make$({
+            .make$(Fixtures.vote({
               poll_id,
               voter_id,
               voter_type,
               type: 'up',
               created_at: yesterday(now)
-            })
+            }))
             .save$()
         })
 
@@ -854,14 +974,18 @@ describe('the CastVote action', () => {
               const vote = await seneca.entity('sys/vote').load$({ poll_id })
               Assert.object(vote, 'vote')
 
-              expect(vote).toEqual(jasmine.objectContaining({
+              expect(vote.entity$).toEqual('-/sys/vote')
+
+              expect(vote.data$(false)).toEqual({
                 id: jasmine.any(String),
                 type: 'down',
                 poll_id,
                 voter_id,
                 voter_type: 'sys/user',
+                kind: jasmine.any(String),
+                code: jasmine.any(String),
                 created_at: jasmine.any(Date)
-              }))
+              })
 
               return done()
             })
