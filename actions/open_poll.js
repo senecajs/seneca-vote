@@ -7,11 +7,8 @@ const OpenPollService = require('../services/open_poll')
 const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
-  this.add('sys:vote,open:poll', async function (msg, reply) {
+  return async function (msg, reply) {
     try {
-      // TODO:
-      // - [ ] Use seneca-joi
-      //
       const validateMessage = Shapes.makeValidator(joi => joi.object({
         fields: joi.object({
           title: joi.string().max(255).required()
@@ -28,14 +25,12 @@ module.exports = function (opts = {}) {
         data: { poll: opened_poll.data$(false) }
       }))
     } catch (err) {
-      // TODO: DRY up this pattern.
-      //
       if (err instanceof ValidationError) {
         return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       return reply(err)
     }
-  })
+  }
 }
 

@@ -6,11 +6,8 @@ const { ValidationError } = require('../lib/errors')
 const Reply = require('../lib/reply')
 
 module.exports = function (opts = {}) {
-  this.add('sys:vote,get:poll', async function (msg, reply) {
+  return async function (msg, reply) {
     try {
-      // TODO:
-      // - [ ] Use seneca-joi
-      //
       const validateMessage = Shapes.makeValidator(joi => joi.object({
         poll_id: joi.string().max(64).required()
       }).unknown(), { stripUnknown: true })
@@ -31,14 +28,12 @@ module.exports = function (opts = {}) {
         data: { poll: poll.data$(false) }
       }))
     } catch (err) {
-      // TODO: DRY up this pattern.
-      //
       if (err instanceof ValidationError) {
         return reply(null, Reply.invalidFieldOfValidationError(err))
       }
 
       return reply(err)
     }
-  })
+  }
 }
 
