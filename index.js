@@ -1,7 +1,7 @@
 const Seneca = require('seneca')
-const GetPoll = require('./lib/get_poll')
-const OpenPoll = require('./lib/open_poll')
-const CastVote = require('./lib/cast_vote')
+const GetPoll = require('./lib/get_poll_msg')
+const OpenPoll = require('./lib/open_poll_msg')
+const CastVote = require('./lib/cast_vote_msg')
 
 module.exports = function (plugin_opts = {}) {
   const seneca = this
