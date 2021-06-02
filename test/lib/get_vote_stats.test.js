@@ -3,9 +3,9 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
-const Fixtures = require('../../support/fixtures')
-const { fetchProp, yesterday, now } = require('../../support/helpers')
-const GetVoteStats = require('../../../services/get_vote_stats')
+const Fixtures = require('../support/fixtures')
+const { fetchProp, yesterday, now } = require('../support/helpers')
+const GetVoteStats = require('../../lib/get_vote_stats')
 
 describe('the GetVoteStats service', () => {
   let seneca
