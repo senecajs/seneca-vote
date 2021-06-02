@@ -1,5 +1,5 @@
 const Assert = require('assert-plus')
-const Vote = require('../../entities/sys/vote')
+const Vote = require('../../lib/entities/sys/vote')
 const { fetchProp } = require('../../lib/utils')
 
 class OpenPollService {
