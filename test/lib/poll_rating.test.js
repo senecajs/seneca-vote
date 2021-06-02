@@ -5,10 +5,10 @@ const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
 const Fixtures = require('../support/fixtures')
 const { fetchProp } = require('../support/helpers')
-const SavePollRating = require('../../lib/save_poll_rating')
+const PollRating = require('../../lib/poll_rating')
 const { NotFoundError } = require('../../lib/errors')
 
-describe('SavePollRating service', () => {
+describe('PollRating service', () => {
   let seneca
 
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe('SavePollRating service', () => {
     }
   }
 
-  describe('toEntities', () => {
+  describe('denormalizeToEntities', () => {
     describe('when an entity with the given id exists', () => {
       let poll_id
 
@@ -57,7 +57,7 @@ describe('SavePollRating service', () => {
           const rating = 37
           const entities = { 'sys/poll': poll_id }
 
-          SavePollRating.toEntities(
+          PollRating.denormalizeToEntities(
             { rating, entities, vote_kind: 'nope', vote_code },
             { seneca: seneca_under_test },
             plugin_opts
@@ -80,7 +80,7 @@ describe('SavePollRating service', () => {
           const rating = 37
           const entities = { 'sys/poll': poll_id }
 
-          SavePollRating.toEntities(
+          PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code: 'nope' },
             { seneca: seneca_under_test },
             plugin_opts
@@ -113,7 +113,7 @@ describe('SavePollRating service', () => {
           const rating = 37
           const entities = { 'sys/vote': vote_id }
 
-          SavePollRating.toEntities(
+          PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
             plugin_opts
@@ -136,7 +136,7 @@ describe('SavePollRating service', () => {
           const rating = 37
           const entities = { 'sys/poll': poll_id }
 
-          SavePollRating.toEntities(
+          PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
             plugin_opts
@@ -160,7 +160,7 @@ describe('SavePollRating service', () => {
         const rating = 37
         const entities = { 'sys/poll': 'idonotexist' }
 
-        SavePollRating.toEntities(
+        PollRating.denormalizeToEntities(
           { rating, entities, vote_kind, vote_code },
           { seneca: seneca_under_test },
           plugin_opts
