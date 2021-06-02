@@ -1,5 +1,4 @@
 const Assert = require('assert-plus')
-const Poll = require('../../entities/sys/poll')
 const Vote = require('../../entities/sys/vote')
 const groupBy = require('lodash.groupby')
 const { fetchProp, countMatching } = require('../../lib/utils')
@@ -23,7 +22,7 @@ class GetVoteStats {
       const vote_kind = fetchProp(args, 'vote_kind')
       const vote_code = fetchProp(args, 'vote_code')
 
-      return Vote.entity({ seneca })
+      return seneca.make('sys/vote')
         .list$({ poll_id, kind: vote_kind, code: vote_code })
         .then(groupVotesByVoter)
         .then(votes_by_voter => {

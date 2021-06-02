@@ -1,5 +1,4 @@
 const Assert = require('assert-plus')
-const Poll = require('../entities/sys/poll')
 const Shapes = require('../lib/shapes')
 const { fetchProp } = require('../lib/utils')
 const { ValidationError } = require('../lib/errors')
@@ -15,8 +14,7 @@ module.exports = function (opts = {}) {
       const safe_params = await validateMessage(msg)
       const poll_id = fetchProp(safe_params, 'poll_id', Assert.string)
 
-      const poll_entity = Poll.entity({ seneca: this })
-      const poll = await poll_entity.load$(poll_id)
+      const poll = await this.make('sys/poll').load$(poll_id)
 
       if (!poll) {
         return reply(null, Reply.notFound({

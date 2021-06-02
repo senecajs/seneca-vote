@@ -1,6 +1,5 @@
 const Assert = require('assert-plus')
 const Vote = require('../../entities/sys/vote')
-const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
 const { NotFoundError } = require('../../lib/errors')
 
@@ -19,7 +18,7 @@ class CastVoteService {
     const vote_kind = fetchProp(args, 'vote_kind')
     const vote_code = fetchProp(args, 'vote_code')
 
-    const poll = await Poll.entity({ seneca }).load$(poll_id)
+    const poll = await seneca.make('sys/poll').load$(poll_id)
 
     if (!poll) {
       throw new NotFoundError('poll')
@@ -35,8 +34,7 @@ class CastVoteService {
       created_at: new Date()
     }
 
-    const _new_vote = await Vote.entity({ seneca })
-      .make$()
+    const _new_vote = seneca.make('sys/vote')
       .data$(vote_attributes)
       .save$()
 

@@ -1,6 +1,5 @@
 const Assert = require('assert-plus')
 const Vote = require('../../entities/sys/vote')
-const Poll = require('../../entities/sys/poll')
 const { fetchProp } = require('../../lib/utils')
 
 class OpenPollService {
@@ -12,8 +11,8 @@ class OpenPollService {
     const seneca = fetchProp(ctx, 'seneca')
     const poll_title = fetchProp(args, 'poll_title', Assert.string)
 
-    const poll_entity = Poll.entity({ seneca })
-    const existing_poll = await poll_entity.load$({ title: poll_title })
+    const existing_poll = await seneca.make('sys/poll')
+      .load$({ title: poll_title })
 
     if (existing_poll) {
       return existing_poll
@@ -25,11 +24,12 @@ class OpenPollService {
       updated_at: null
     }
 
-    await poll_entity.make$()
+    await seneca.make('sys/poll')
       .data$(poll_attributes)
       .save$({ upsert$: ['title'] })
 
-    const new_poll = await poll_entity.load$(poll_attributes)
+    const new_poll = await seneca.make('sys/poll')
+      .load$(poll_attributes)
 
     return new_poll
   }
