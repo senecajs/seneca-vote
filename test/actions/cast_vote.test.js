@@ -5,7 +5,7 @@ const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
 const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
-const SavePollRating = require('../../services/save_poll_rating')
+const SavePollRating = require('../../lib/save_poll_rating')
 
 describe('the CastVote action', () => {
   let seneca

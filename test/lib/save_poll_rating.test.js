@@ -3,10 +3,10 @@ const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
-const Fixtures = require('../../support/fixtures')
-const { fetchProp } = require('../../support/helpers')
-const SavePollRating = require('../../../services/save_poll_rating')
-const { NotFoundError } = require('../../../lib/errors')
+const Fixtures = require('../support/fixtures')
+const { fetchProp } = require('../support/helpers')
+const SavePollRating = require('../../lib/save_poll_rating')
+const { NotFoundError } = require('../../lib/errors')
 
 describe('SavePollRating service', () => {
   let seneca
