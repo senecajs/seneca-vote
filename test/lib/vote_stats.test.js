@@ -5,9 +5,9 @@ const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
 const Fixtures = require('../support/fixtures')
 const { fetchProp, yesterday, now } = require('../support/helpers')
-const GetVoteStats = require('../../lib/get_vote_stats')
+const VoteStats = require('../../lib/vote_stats')
 
-describe('the GetVoteStats service', () => {
+describe('the VoteStats service', () => {
   let seneca
 
   beforeEach(() => {
@@ -58,7 +58,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id, vote_code: 'yellow' }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -98,7 +98,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id, vote_kind: 'saturn' }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -139,7 +139,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -161,7 +161,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -184,7 +184,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts for the requested poll', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -213,7 +213,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
@@ -256,7 +256,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -282,7 +282,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -307,7 +307,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -348,7 +348,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -389,7 +389,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -433,7 +433,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -459,7 +459,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -484,7 +484,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -525,7 +525,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -566,7 +566,7 @@ describe('the GetVoteStats service', () => {
           it('returns correct vote counts', done => {
             const si = senecaUnderTest(seneca, done)
 
-            GetVoteStats
+            VoteStats
               .forPoll(validParams({ poll_id }), { seneca: si })
               .then(result => {
                 expect(result).toEqual(jasmine.objectContaining({
@@ -584,7 +584,7 @@ describe('the GetVoteStats service', () => {
         it('returns correct vote counts', done => {
           const si = senecaUnderTest(seneca, done)
 
-          GetVoteStats
+          VoteStats
             .forPoll(validParams({ poll_id }), { seneca: si })
             .then(result => {
               expect(result).toEqual(jasmine.objectContaining({
