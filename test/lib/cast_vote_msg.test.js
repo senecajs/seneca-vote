@@ -5,7 +5,7 @@ const SenecaPromisify = require('seneca-promisify')
 const { fetchProp, yesterday } = require('../support/helpers')
 const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
-const SavePollRating = require('../../services/save_poll_rating')
+const PollRating = require('../../lib/poll_rating')
 
 describe('the CastVote action', () => {
   let seneca
@@ -483,15 +483,15 @@ describe('the CastVote action', () => {
 
 
         beforeEach(() => {
-          const toEntities = SavePollRating.toEntities
+          const denormalizeToEntities = PollRating.denormalizeToEntities
 
-          spyOn(SavePollRating, 'toEntities').and.callFake((...args) => {
+          spyOn(PollRating, 'denormalizeToEntities').and.callFake((...args) => {
             expect(args.length > 0).toEqual(true)
 
             const plugin_opts_arg = args[args.length - 1]
             expect(plugin_opts_arg).toEqual(vote_plugin_opts)
 
-            return toEntities(...args)
+            return denormalizeToEntities(...args)
           })
         })
 
@@ -535,7 +535,7 @@ describe('the CastVote action', () => {
             messageUpVote(seneca_under_test, params)
               .then(async (result) => {
                 expect(result.ok).toEqual(true)
-                expect(SavePollRating.toEntities).toHaveBeenCalled()
+                expect(PollRating.denormalizeToEntities).toHaveBeenCalled()
 
                 const poll = await seneca.make('sys/poll').load$(save_to_poll_id)
                 expect(save_to_field in poll).toEqual(true)
@@ -566,7 +566,7 @@ describe('the CastVote action', () => {
                   details: { what: 'sys/poll' }
                 })
 
-                expect(SavePollRating.toEntities).toHaveBeenCalled()
+                expect(PollRating.denormalizeToEntities).toHaveBeenCalled()
 
                 return done()
               })
