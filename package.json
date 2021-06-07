@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
-    "check-coverage": "./node_modules/nyc/bin/nyc.js npm test",
+    "test": "./node_modules/nyc/bin/nyc.js npm run test-fast",
+    "test-fast": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
     "clean": "rm -rf node_modules yarn.lock package-lock.json",
     "reset": "npm run clean && npm i && npm run build && npm test",
     "build": "echo no-build"
