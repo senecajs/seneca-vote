@@ -458,7 +458,7 @@ describe('the CastVote action', () => {
       // NOTE: This use case has been tested in more detail in the tests for
       // the delegatee utility.
       //
-      describe('when requested to save the rating to some entities', () => {
+      describe('when requested to denormalize the rating', () => {
         let seneca
 
         const vote_kind = 'red'
@@ -572,6 +572,72 @@ describe('the CastVote action', () => {
               })
               .catch(done)
           })
+        })
+      })
+
+      describe('requested to denormalize the rating, but no option', () => {
+        let seneca
+
+        const vote_kind = 'red'
+        const vote_code = 'mars'
+        const save_to_field = '_rating'
+
+        beforeEach(() => {
+          seneca = makeSeneca({ vote_plugin_opts: {} })
+        })
+
+
+        beforeEach(() => {
+          spyOn(PollRating, 'denormalizeToEntities').and.callThrough()
+        })
+
+
+        let poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          poll_id = fetchProp(poll, 'id')
+        })
+
+
+        let save_to_poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          save_to_poll_id = fetchProp(poll, 'id')
+        })
+
+
+        it('ignores the request to denormalize', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+          const params = validParams({
+            kind: vote_kind,
+            code: vote_code,
+            save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+          })
+
+          params.fields.poll_id = poll_id
+
+
+          messageUpVote(seneca_under_test, params)
+            .then(async (result) => {
+              expect(result.ok).toEqual(true)
+              expect(PollRating.denormalizeToEntities).toHaveBeenCalled()
+
+              const poll = await seneca.make('sys/poll').load$(save_to_poll_id)
+              expect(save_to_field in poll).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
         })
       })
     })
