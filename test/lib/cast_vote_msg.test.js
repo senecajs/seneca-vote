@@ -573,6 +573,37 @@ describe('the CastVote action', () => {
               .catch(done)
           })
         })
+
+        describe('when the given entity id is null', () => {
+          it('responds with an error', done => {
+            const seneca_under_test = senecaUnderTest(seneca, done)
+
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              save_poll_rating_to: { 'sys/poll': null }
+            })
+
+            params.fields.poll_id = poll_id
+
+            messageUpVote(seneca_under_test, params)
+              .then(async (result) => {
+                expect(result).toEqual({
+                  ok: false,
+                  why: 'invalid-field',
+                  details: {
+                    path: ['save_poll_rating_to', 'sys/poll'],
+                    why_exactly: 'base'
+                  }
+                })
+
+                expect(PollRating.denormalizeToEntities).not.toHaveBeenCalled()
+
+                return done()
+              })
+              .catch(done)
+          })
+        })
       })
 
       describe('requested to denormalize the rating, but no option', () => {
