@@ -1,6 +1,6 @@
 const Assert = require('assert-plus')
 const Shapes = require('../../lib/shapes')
-const { ValidationError } = require('../../lib/errors')
+const { InvalidPluginOptionsError } = require('../../lib/errors')
 
 describe('validatePluginOptions', () => {
   it('expects all required options to be present', async () => {
@@ -14,7 +14,7 @@ describe('validatePluginOptions', () => {
         foo: 'bar'
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message).toEqual(`"foo" is not allowed`)
 
         return
@@ -44,7 +44,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message)
           .toEqual(`"dependents.${invalid_kind}" is not allowed`)
 
@@ -67,7 +67,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message)
           .toEqual(`"dependents.${kind}" must be of type object`)
 
@@ -99,7 +99,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message)
           .toEqual(`"dependents.${kind}.${invalid_code}" is not allowed`)
 
@@ -125,7 +125,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message)
           .toEqual(`"dependents.${kind}.${code}" must be of type object`)
 
@@ -151,7 +151,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message)
           .toEqual(`"dependents.${kind}.${code}.totals" is required`)
 
@@ -184,7 +184,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message).toEqual(
           `"dependents.${kind}.${code}.totals.${invalid_ent_name}"` +
             ' is not allowed'
@@ -217,7 +217,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message).toEqual(
           `"dependents.${kind}.${code}.totals.${ent_name}"` +
             ' must be of type object'
@@ -250,7 +250,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message).toEqual(
           `"dependents.${kind}.${code}.totals.${ent_name}.field"` +
             ' is required'
@@ -287,7 +287,7 @@ describe('validatePluginOptions', () => {
         }
       })
     } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof InvalidPluginOptionsError) {
         expect(err.message).toEqual(
           `"dependents.${kind}.${code}.totals.${ent_name}.field"` +
             ' is not allowed to be empty'
