@@ -10,6 +10,10 @@
     "reset": "npm run clean && npm i && npm run build && npm test",
     "build": "echo no-build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lilsweetcaligula/seneca-vote"
+  },
   "keywords": [],
   "contributors": [
     "Richard Rodger (http://richardrodger.com/)"
