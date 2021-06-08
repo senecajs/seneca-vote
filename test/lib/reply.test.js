@@ -87,3 +87,14 @@ describe('invalidField', () => {
   })
 })
 
+describe('handleAppError', () => {
+  it('passes forward unhandled errors', done => {
+    const some_error = new Error()
+
+    return Reply.handleAppError(some_error, err => {
+      expect(err).toEqual(some_error)
+      return done()
+    })
+  })
+})
+

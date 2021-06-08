@@ -129,7 +129,41 @@ describe('PollRating service', () => {
         })
       })
 
-      describe('normally', () => {
+      describe('kind and code match, entity exists, field is null', () => {
+        const plugin_opts = {
+          dependents: {
+            [vote_kind]: {
+              [vote_code]: {
+                totals: {
+                  'sys/poll': { field: null }
+                }
+              }
+            }
+          }
+        }
+
+        it('does not save the rating', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          const rating = 37
+          const entities = { 'sys/poll': poll_id }
+
+          PollRating.denormalizeToEntities(
+            { rating, entities, vote_kind, vote_code },
+            { seneca: seneca_under_test },
+            plugin_opts
+          )
+            .then(async () => {
+              const poll = await seneca.make('sys/poll').load$(poll_id)
+              expect(save_to_field in poll).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('both kind and code match, and the entity exists', () => {
         it('saves the rating to the entity', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
