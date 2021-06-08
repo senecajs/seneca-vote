@@ -4,6 +4,7 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const { fetchProp } = require('../support/helpers')
 const VotePlugin = require('../../')
+const MemStore = require('seneca-mem-store')
 
 describe('the OpenPoll action', () => {
   let seneca
@@ -19,6 +20,7 @@ describe('the OpenPoll action', () => {
       .use(Entities)
       .use(SenecaPromisify)
       .use(VotePlugin)
+      .use(MemStore)
   }
 
   function senecaUnderTest(seneca, cb) {
