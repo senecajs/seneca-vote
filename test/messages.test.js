@@ -124,7 +124,7 @@ function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         kind: 'red',
         code: 'mars'
       },
-      save_poll_rating_to: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
@@ -210,7 +210,7 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         kind: 'red',
         code: 'mars'
       },
-      save_poll_rating_to: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,

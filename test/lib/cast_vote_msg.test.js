@@ -532,7 +532,7 @@ describe('the CastVote action', () => {
             const params = validParams({
               kind: vote_kind,
               code: vote_code,
-              save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+              dependents: { 'sys/poll': save_to_poll_id }
             })
 
             params.fields.poll_id = poll_id
@@ -559,7 +559,7 @@ describe('the CastVote action', () => {
             const params = validParams({
               kind: vote_kind,
               code: vote_code,
-              save_poll_rating_to: { 'sys/poll': 'idonotexist' }
+              dependents: { 'sys/poll': 'idonotexist' }
             })
 
             params.fields.poll_id = poll_id
@@ -587,7 +587,7 @@ describe('the CastVote action', () => {
             const params = validParams({
               kind: vote_kind,
               code: vote_code,
-              save_poll_rating_to: { 'sys/poll': null }
+              dependents: { 'sys/poll': null }
             })
 
             params.fields.poll_id = poll_id
@@ -598,7 +598,7 @@ describe('the CastVote action', () => {
                   ok: false,
                   why: 'invalid-field',
                   details: {
-                    path: ['save_poll_rating_to', 'sys/poll'],
+                    path: ['dependents', 'sys/poll'],
                     why_exactly: 'base'
                   }
                 })
@@ -658,7 +658,7 @@ describe('the CastVote action', () => {
           const params = validParams({
             kind: vote_kind,
             code: vote_code,
-            save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+            dependents: { 'sys/poll': save_to_poll_id }
           })
 
           params.fields.poll_id = poll_id
