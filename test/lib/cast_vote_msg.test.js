@@ -286,7 +286,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -371,7 +373,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -428,7 +432,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
@@ -923,7 +929,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -1006,7 +1014,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -1063,7 +1073,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(1)

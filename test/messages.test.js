@@ -104,7 +104,7 @@ function upvoteWhenSuccessful(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
       }
     }
   }
@@ -129,7 +129,7 @@ function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
       }
     }
   }
@@ -190,7 +190,7 @@ function downvoteWhenSuccessful(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
       }
     }
   }
@@ -215,7 +215,7 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
       }
     }
   }
