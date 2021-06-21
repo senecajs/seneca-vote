@@ -2,7 +2,7 @@
   "name": "seneca-vote",
   "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "vote.js",
   "scripts": {
     "test": "./node_modules/nyc/bin/nyc.js npm run test-fast",
     "test-fast": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
