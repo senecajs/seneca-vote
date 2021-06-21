@@ -4,7 +4,6 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const SenecaMsgTest = require('seneca-msg-test')
 const Joi = SenecaMsgTest.Joi
-const { fetchProp } = require('./support/helpers')
 const VotePlugin = require('../')
 
 describe('message-level tests', () => {
@@ -88,7 +87,7 @@ function upvoteWhenSomeParamsAreMissing() {
 
 function upvoteWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:up',
@@ -112,7 +111,7 @@ function upvoteWhenSuccessful(args = {}) {
 
 function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:up',
@@ -174,7 +173,7 @@ function downvoteWhenSomeParamsAreMissing() {
 
 function downvoteWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:down',
@@ -198,7 +197,7 @@ function downvoteWhenSuccessful(args = {}) {
 
 function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:down',
@@ -256,7 +255,7 @@ function getPollWhenPollIdParamIsMissing() {
 
 function getPollWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'get:poll',
@@ -298,7 +297,7 @@ function openPollWhenSomeParamsAreMissing() {
 
 function openPollWhenAPollWithTheGivenTitleAlreadyExists(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'open:poll',

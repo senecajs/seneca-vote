@@ -2,7 +2,6 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const { fetchProp } = require('../support/helpers')
 const VotePlugin = require('../../')
 
 describe('the GetPoll action', () => {
@@ -87,7 +86,7 @@ describe('the GetPoll action', () => {
         })
         .save$()
 
-      poll_id = fetchProp(poll, 'id')
+      poll_id = poll.id
     })
 
     it('responds with poll-related info', done => {

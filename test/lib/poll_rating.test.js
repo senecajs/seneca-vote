@@ -4,7 +4,6 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
 const Fixtures = require('../support/fixtures')
-const { fetchProp } = require('../support/helpers')
 const PollRating = require('../../lib/poll_rating')
 const { NotFoundError } = require('../../lib/errors')
 
@@ -47,7 +46,7 @@ describe('PollRating service', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       describe('requested vote kind does not match the one specified in the plugin options', () => {
@@ -104,7 +103,7 @@ describe('PollRating service', () => {
             .make$(Fixtures.vote())
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('does not save the rating', done => {

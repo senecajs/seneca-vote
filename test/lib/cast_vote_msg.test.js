@@ -2,7 +2,7 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const { fetchProp, yesterday } = require('../support/helpers')
+const { yesterday } = require('../support/helpers')
 const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 const PollRating = require('../../lib/poll_rating')
@@ -229,7 +229,7 @@ describe('the CastVote action', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       beforeEach(async () => {
@@ -351,7 +351,7 @@ describe('the CastVote action', () => {
             }))
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('creates a new upvote, the existing downvote is considered a "tombstone"', done => {
@@ -509,7 +509,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          poll_id = fetchProp(poll, 'id')
+          poll_id = poll.id
         })
 
 
@@ -520,7 +520,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          save_to_poll_id = fetchProp(poll, 'id')
+          save_to_poll_id = poll.id
         })
 
 
@@ -636,7 +636,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          poll_id = fetchProp(poll, 'id')
+          poll_id = poll.id
         })
 
 
@@ -647,7 +647,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          save_to_poll_id = fetchProp(poll, 'id')
+          save_to_poll_id = poll.id
         })
 
 
@@ -870,7 +870,7 @@ describe('the CastVote action', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       beforeEach(async () => {
@@ -907,7 +907,7 @@ describe('the CastVote action', () => {
             }))
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('creates a new downvote, the existing downvote is considered a "tombstone"', done => {

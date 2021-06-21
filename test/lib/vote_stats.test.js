@@ -4,7 +4,7 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
 const Fixtures = require('../support/fixtures')
-const { fetchProp, yesterday, now } = require('../support/helpers')
+const { yesterday, now } = require('../support/helpers')
 const VoteStats = require('../../lib/vote_stats')
 
 describe('the VoteStats service', () => {
@@ -28,7 +28,7 @@ describe('the VoteStats service', () => {
       .data$(Fixtures.poll())
       .save$()
 
-    poll_id = fetchProp(poll, 'id')
+    poll_id = poll.id
   })
 
   describe('forPoll', () => {
