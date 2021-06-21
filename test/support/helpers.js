@@ -16,13 +16,9 @@ class TestHelpers {
       Assert.fail('Object cannot be null or undefined.')
     }
 
-    const props = (() => {
-      if (Array.isArray(prop)) {
-        return prop
-      }
-
-      return [prop]
-    })()
+    const props = Array.isArray(prop)
+      ? prop
+      : [prop]
 
     const x = props.reduce((o, prop) => {
       if (!(prop in o)) {
