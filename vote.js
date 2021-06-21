@@ -1,17 +1,17 @@
 const Seneca = require('seneca')
 const { Joi } = Seneca.util
-const GetPoll = require('./lib/get_poll_msg')
-const OpenPoll = require('./lib/open_poll_msg')
-const CastVote = require('./lib/cast_vote_msg')
+const makeGetPoll = require('./lib/get_poll_msg')
+const makeOpenPoll = require('./lib/open_poll_msg')
+const makeCastVote = require('./lib/cast_vote_msg')
 const Shapes = require('./lib/shapes')
 
 
 const seneca_vote = async function seneca_vote(options = {}) {
   const seneca = this
 
-  seneca.add('sys:vote,open:poll', OpenPoll(options))
-  seneca.add('sys:vote,get:poll', GetPoll(options))
-  seneca.add('sys:vote,vote:*', CastVote(options))
+  seneca.add('sys:vote,open:poll', makeOpenPoll(options))
+  seneca.add('sys:vote,get:poll', makeGetPoll(options))
+  seneca.add('sys:vote,vote:*', makeCastVote(options))
 }
 
 
