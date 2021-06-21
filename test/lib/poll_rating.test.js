@@ -26,7 +26,7 @@ describe('PollRating service', () => {
   const vote_code = 'mars'
   const save_to_field = '_rating'
 
-  const plugin_opts = {
+  const options = {
     dependents: {
       [vote_kind]: {
         [vote_code]: {
@@ -60,7 +60,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind: 'nope', vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -83,7 +83,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code: 'nope' },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -116,7 +116,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const vote = await seneca.make('sys/vote').load$(vote_id)
@@ -130,7 +130,7 @@ describe('PollRating service', () => {
       })
 
       describe('kind and code match, entity exists, field is null', () => {
-        const plugin_opts = {
+        const options = {
           dependents: {
             [vote_kind]: {
               [vote_code]: {
@@ -151,7 +151,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -173,7 +173,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -197,7 +197,7 @@ describe('PollRating service', () => {
         PollRating.denormalizeToEntities(
           { rating, entities, vote_kind, vote_code },
           { seneca: seneca_under_test },
-          plugin_opts
+          options
         )
           .then(async () => {
             done(new Error('Expected an error to be thrown'))

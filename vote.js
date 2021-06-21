@@ -6,12 +6,12 @@ const CastVote = require('./lib/cast_vote_msg')
 const Shapes = require('./lib/shapes')
 
 
-const seneca_vote = async function seneca_vote(plugin_opts = {}) {
+const seneca_vote = async function seneca_vote(options = {}) {
   const seneca = this
 
-  seneca.add('sys:vote,open:poll', OpenPoll(plugin_opts))
-  seneca.add('sys:vote,get:poll', GetPoll(plugin_opts))
-  seneca.add('sys:vote,vote:*', CastVote(plugin_opts))
+  seneca.add('sys:vote,open:poll', OpenPoll(options))
+  seneca.add('sys:vote,get:poll', GetPoll(options))
+  seneca.add('sys:vote,vote:*', CastVote(options))
 }
 
 
