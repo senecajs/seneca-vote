@@ -1,8 +1,8 @@
 const Seneca = require('seneca')
+const { Joi } = Seneca.util
 const GetPoll = require('./lib/get_poll_msg')
 const OpenPoll = require('./lib/open_poll_msg')
 const CastVote = require('./lib/cast_vote_msg')
-const Joi = require('@hapi/joi')
 const Shapes = require('./lib/shapes')
 
 
