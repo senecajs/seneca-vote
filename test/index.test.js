@@ -1,18 +1,23 @@
 const Seneca = require('seneca')
 const VotePlugin = require('..')
-const Shapes = require('../lib/shapes')
 
 describe('plugin options', () => {
   it('validates the options', done => {
-    spyOn(Shapes, 'validatePluginOptions').and.callThrough()
-
     const seneca = Seneca({ log: 'test' })
 
-    seneca.use(VotePlugin, {})
+    seneca.die = err => {
+      expect(err instanceof Error).toEqual(true)
+      expect(err.message).toMatch('Plugin seneca_vote: option value is not valid')
+
+      done()
+    }
+
+    seneca.use(VotePlugin, {
+      dependents: { foo: 'bar' }
+    })
 
     seneca.ready(() => {
-      expect(Shapes.validatePluginOptions).toHaveBeenCalled()
-      return done()
+      return done(new Error('Expected Seneca to terminate with an error.'))
     })
   })
 })
