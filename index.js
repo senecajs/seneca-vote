@@ -5,12 +5,6 @@ const CastVote = require('./lib/cast_vote_msg')
 const Joi = require('@hapi/joi')
 const Shapes = require('./lib/shapes')
 
-const {
-  voteKindSchema: voteKind,
-  voteCodeSchema: voteCode,
-  entityNameSchema: entityName 
-} = Shapes
-
 
 const seneca_vote = async function seneca_vote(plugin_opts = {}) {
   const seneca = this
@@ -22,6 +16,13 @@ const seneca_vote = async function seneca_vote(plugin_opts = {}) {
 
 
 module.exports = seneca_vote
+
+
+const {
+  voteKindSchema: voteKind,
+  voteCodeSchema: voteCode,
+  entityNameSchema: entityName 
+} = Shapes
 
 module.exports.defaults = {
   dependents: Joi
