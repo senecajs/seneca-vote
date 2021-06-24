@@ -46,11 +46,9 @@ describe('message-level tests', () => {
         upvoteWhenSomeParamsAreMissing(),
         upvoteWhenSuccessful({ poll_id }),
         upvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
-        upvoteWhenPollDoesNotExist(),
         downvoteWhenSomeParamsAreMissing(),
         downvoteWhenSuccessful({ poll_id }),
         downvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
-        downvoteWhenPollDoesNotExist(),
         getPollWhenPollIdParamIsMissing(),
         getPollWhenSuccessful({ poll_id }),
         getPollWhenPollDoesNotExist(),
@@ -134,27 +132,6 @@ function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
   }
 }
 
-function upvoteWhenPollDoesNotExist() {
-  return {
-    pattern: 'vote:up',
-    params: {
-      fields: {
-        poll_id: 'does_not_exist',
-        voter_id: 'bar',
-        voter_type: 'sys/user',
-        kind: 'red',
-        code: 'mars'
-      }
-    },
-    err: {
-      seneca: true,
-      code: 'not_found',
-      msg: 'seneca: poll not found',
-      details: { what: 'poll' }
-    }
-  }
-}
-
 function downvoteWhenSomeParamsAreMissing() {
   return {
     pattern: 'vote:down',
@@ -215,27 +192,6 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
       data: {
         poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
       }
-    }
-  }
-}
-
-function downvoteWhenPollDoesNotExist() {
-  return {
-    pattern: 'vote:down',
-    params: {
-      fields: {
-        poll_id: 'does_not_exist',
-        voter_id: 'bar',
-        voter_type: 'sys/user',
-        kind: 'red',
-        code: 'mars'
-      }
-    },
-    err: {
-      seneca: true,
-      code: 'not_found',
-      msg: 'seneca: poll not found',
-      details: { what: 'poll' }
     }
   }
 }
