@@ -146,12 +146,11 @@ function upvoteWhenPollDoesNotExist() {
         code: 'mars'
       }
     },
-    out: {
-      ok: false,
-      why: 'not-found',
-      details: {
-        what: 'poll'
-      }
+    err: {
+      seneca: true,
+      code: 'not_found',
+      msg: 'seneca: poll not found',
+      details: { what: 'poll' }
     }
   }
 }
@@ -232,12 +231,11 @@ function downvoteWhenPollDoesNotExist() {
         code: 'mars'
       }
     },
-    out: {
-      ok: false,
-      why: 'not-found',
-      details: {
-        what: 'poll'
-      }
+    err: {
+      seneca: true,
+      code: 'not_found',
+      msg: 'seneca: poll not found',
+      details: { what: 'poll' }
     }
   }
 }

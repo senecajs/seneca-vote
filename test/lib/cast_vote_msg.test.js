@@ -188,8 +188,18 @@ describe('the CastVote action', () => {
     })
 
     describe('when the poll does not exist', () => {
-      it('responds with an error', done => {
+      it('fails with an error', done => {
         const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+        let failed = false
+
+        spyOn(seneca_under_test, 'fail')
+          .withArgs('not_found', { what: 'poll' })
+          .and.callFake((..._args) => {
+            failed = true
+          })
+
 
         const params = validParams()
         const fake_poll_id = 'foo'
@@ -204,16 +214,11 @@ describe('the CastVote action', () => {
             params
           ))
           .then(async (result) => {
-            expect(result).toEqual({
-              ok: false,
-              why: 'not-found',
-              details: {
-                what: 'poll'
-              }
-            })
+            if (!failed) {
+              return done(new Error('Expected seneca to fail with an error.'))
+            }
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
-
 
             return done()
           })
@@ -833,8 +838,18 @@ describe('the CastVote action', () => {
     })
 
     describe('when the poll does not exist', () => {
-      it('responds with an error', done => {
+      it('fails with an error', done => {
         const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+        let failed = false
+
+        spyOn(seneca_under_test, 'fail')
+          .withArgs('not_found', { what: 'poll' })
+          .and.callFake((..._args) => {
+            failed = true
+          })
+
 
         const params = validParams()
         const fake_poll_id = 'foo'
@@ -849,16 +864,11 @@ describe('the CastVote action', () => {
             params
           ))
           .then(async (result) => {
-            expect(result).toEqual({
-              ok: false,
-              why: 'not-found',
-              details: {
-                what: 'poll'
-              }
-            })
+            if (!failed) {
+              return done(new Error('Expected seneca to fail with an error.'))
+            }
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
-
 
             return done()
           })
