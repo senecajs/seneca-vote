@@ -494,8 +494,12 @@ describe('the CastVote action', () => {
           spyOn(PollRating, 'denormalizeToEntities').and.callFake((...args) => {
             expect(args.length > 0).toEqual(true)
 
+
             const plugin_opts_arg = args[args.length - 1]
-            expect(plugin_opts_arg).toEqual(vote_plugin_opts)
+
+            expect(plugin_opts_arg)
+              .toEqual(jasmine.objectContaining(vote_plugin_opts))
+
 
             return denormalizeToEntities(...args)
           })

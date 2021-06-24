@@ -47,3 +47,8 @@ module.exports.defaults = {
     ).optional()
 }
 
+
+module.exports.errors = {
+  not_found: '<%=what%> not found'
+}
+
