@@ -22,7 +22,6 @@ describe('message-level tests', () => {
 
   const poll_id = 'abcpoll123'
 
-
   let test_spec
 
   beforeEach(() => {
@@ -37,10 +36,10 @@ describe('message-level tests', () => {
             [poll_id]: {
               id: poll_id,
               title: 'Best hairline of the Ist century A.D.',
-              created_at: '2021-04-14T01:02:00.765Z'
-            }
-          }
-        }
+              created_at: '2021-04-14T01:02:00.765Z',
+            },
+          },
+        },
       },
       calls: [
         upvoteWhenSomeParamsAreMissing(),
@@ -54,19 +53,18 @@ describe('message-level tests', () => {
         getPollWhenPollDoesNotExist(),
         openPollWhenSomeParamsAreMissing(),
         openPollWhenAPollWithTheGivenTitleAlreadyExists({ poll_id }),
-        openPollWhenAPollWithTheGivenTitleDoesNotExist()
-      ]
+        openPollWhenAPollWithTheGivenTitleDoesNotExist(),
+      ],
     }
   })
 
-  it('is ok', done => {
+  it('is ok', (done) => {
     const seneca_under_test = senecaUnderTest(seneca, done)
     const runMsgTest = SenecaMsgTest(seneca_under_test, test_spec)
 
     runMsgTest().then(done).catch(done)
   })
 })
-
 
 function upvoteWhenSomeParamsAreMissing() {
   return {
@@ -77,9 +75,9 @@ function upvoteWhenSomeParamsAreMissing() {
       why: 'invalid-field',
       details: {
         path: ['fields'],
-        why_exactly: 'required'
-      }
-    }
+        why_exactly: 'required',
+      },
+    },
   }
 }
 
@@ -95,15 +93,15 @@ function upvoteWhenSuccessful(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
-      }
+        code: 'mars',
+      },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
-      }
-    }
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 },
+      },
+    },
   }
 }
 
@@ -119,16 +117,16 @@ function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
+        code: 'mars',
       },
-      dependents: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
-      }
-    }
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 },
+      },
+    },
   }
 }
 
@@ -141,9 +139,9 @@ function downvoteWhenSomeParamsAreMissing() {
       why: 'invalid-field',
       details: {
         path: ['fields'],
-        why_exactly: 'required'
-      }
-    }
+        why_exactly: 'required',
+      },
+    },
   }
 }
 
@@ -159,15 +157,15 @@ function downvoteWhenSuccessful(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
-      }
+        code: 'mars',
+      },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
-      }
-    }
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 },
+      },
+    },
   }
 }
 
@@ -183,16 +181,16 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
+        code: 'mars',
       },
-      dependents: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
-      }
-    }
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 },
+      },
+    },
   }
 }
 
@@ -202,8 +200,8 @@ function getPollWhenPollIdParamIsMissing() {
     params: {},
     out: {
       ok: false,
-      why: 'invalid-field'
-    }
+      why: 'invalid-field',
+    },
   }
 }
 
@@ -220,10 +218,10 @@ function getPollWhenSuccessful(args = {}) {
         poll: {
           id: poll_id,
           title: 'Best hairline of the Ist century A.D.',
-          created_at: '2021-04-14T01:02:00.765Z'
-        }
-      }
-    }
+          created_at: '2021-04-14T01:02:00.765Z',
+        },
+      },
+    },
   }
 }
 
@@ -233,8 +231,8 @@ function getPollWhenPollDoesNotExist() {
     params: { poll_id: 'does_not_exist' },
     out: {
       ok: false,
-      why: 'not-found'
-    }
+      why: 'not-found',
+    },
   }
 }
 
@@ -244,8 +242,8 @@ function openPollWhenSomeParamsAreMissing() {
     params: {},
     out: {
       ok: false,
-      why: 'invalid-field'
-    }
+      why: 'invalid-field',
+    },
   }
 }
 
@@ -257,8 +255,8 @@ function openPollWhenAPollWithTheGivenTitleAlreadyExists(args = {}) {
     pattern: 'open:poll',
     params: {
       fields: {
-        title: 'Best hairline of the Ist century A.D.'
-      }
+        title: 'Best hairline of the Ist century A.D.',
+      },
     },
     out: {
       ok: true,
@@ -266,10 +264,10 @@ function openPollWhenAPollWithTheGivenTitleAlreadyExists(args = {}) {
         poll: {
           id: poll_id,
           title: 'Best hairline of the Ist century A.D.',
-          created_at: '2021-04-14T01:02:00.765Z'
-        }
-      }
-    }
+          created_at: '2021-04-14T01:02:00.765Z',
+        },
+      },
+    },
   }
 }
 
@@ -279,7 +277,7 @@ function openPollWhenAPollWithTheGivenTitleDoesNotExist() {
     params: {
       fields: {
         title: 'Lorem Ipsum Dolor Sit Amet',
-      }
+      },
     },
     out: {
       ok: true,
@@ -287,10 +285,9 @@ function openPollWhenAPollWithTheGivenTitleDoesNotExist() {
         poll: {
           id: Joi.string().required(),
           title: 'Lorem Ipsum Dolor Sit Amet',
-          created_at: Joi.date().iso().required()
-        }
-      }
-    }
+          created_at: Joi.date().iso().required(),
+        },
+      },
+    },
   }
 }
-

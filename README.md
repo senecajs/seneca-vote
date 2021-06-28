@@ -1,4 +1,4 @@
-## seneca-vote
+## @seneca/vote
 
 A voting plugin for Seneca.js
 
@@ -19,7 +19,7 @@ Normally, your code would look like this:
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const VotePlugin = require('seneca-vote')
+const VotePlugin = require('@seneca/vote')
 
 Seneca()
   .use(Entities)

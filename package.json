@@ -1,6 +1,6 @@
 {
-  "name": "seneca-vote",
-  "version": "1.0.1",
+  "name": "@seneca/vote",
+  "version": "2.0.0",
   "description": "",
   "main": "vote.js",
   "scripts": {
@@ -8,11 +8,15 @@
     "test-fast": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
     "clean": "rm -rf node_modules yarn.lock package-lock.json",
     "reset": "npm run clean && npm i && npm run build && npm test",
-    "build": "echo no-build"
+    "build": "npm run prettier",
+    "prettier": "prettier --write --no-semi --single-quote *.js test/*.js",
+    "repo-tag": "REPO_VERSION=`node -e \"console.log(require('./package').version)\"` && echo TAG: v$REPO_VERSION && git commit -a -m v$REPO_VERSION && git push && git tag v$REPO_VERSION && git push --tags;",
+    "repo-publish": "npm run clean && npm i --registry=http://registry.npmjs.org && npm run repo-publish-quick",
+    "repo-publish-quick": "npm run prettier && npm test && npm run repo-tag && npm publish --access public --registry=http://registry.npmjs.org"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lilsweetcaligula/seneca-vote"
+    "url": "https://github.com/senecajs/seneca-vote"
   },
   "keywords": [],
   "contributors": [
@@ -25,8 +29,9 @@
     "lodash.groupby": "4.6.0",
     "lodash.ismatch": "4.4.0",
     "moment": "2.29.1",
-    "seneca": "3.23.2",
-    "seneca-entity": "13.0.0",
+    "prettier": "^2.3.2",
+    "seneca": "3.23.3",
+    "seneca-entity": "14.0.0",
     "seneca-promisify": "2.0.0"
   },
   "devDependencies": {
@@ -34,6 +39,6 @@
     "jasmine": "3.7.0",
     "nyc": "15.1.0",
     "seneca-mem-store": "6.0.3",
-    "seneca-msg-test": "3.1.0"
+    "seneca-msg-test": "3.2.0"
   }
 }
