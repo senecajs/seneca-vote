@@ -1,6 +1,6 @@
 const Assert = require('assert-plus')
 const Faker = require('faker')
-const { fetchProp, yesterday } = require('./helpers')
+const { yesterday } = require('./helpers')
 
 class Fixtures {
   static vote(overrides = {}) {

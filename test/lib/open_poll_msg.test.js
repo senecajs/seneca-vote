@@ -2,8 +2,8 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const { fetchProp } = require('../support/helpers')
 const VotePlugin = require('../../')
+const MemStore = require('seneca-mem-store')
 
 describe('the OpenPoll action', () => {
   let seneca
@@ -19,6 +19,7 @@ describe('the OpenPoll action', () => {
       .use(Entities)
       .use(SenecaPromisify)
       .use(VotePlugin)
+      .use(MemStore)
   }
 
   function senecaUnderTest(seneca, cb) {
@@ -125,8 +126,8 @@ describe('the OpenPoll action', () => {
 
     describe('when bombarded with messages to create a poll with the same title', () => {
       function bombardOpenPolls(args, done) {
-        const seneca = fetchProp(args, 'seneca', Assert.ok)
-        const num_calls = fetchProp(args, 'num_calls', Assert.number)
+        const seneca = args.seneca
+        const num_calls = args.num_calls
 
         Assert(num_calls >= 0, 'num_calls')
 
@@ -200,7 +201,7 @@ describe('the OpenPoll action', () => {
         })
         .save$()
 
-      poll_id = fetchProp(poll, 'id')
+      poll_id = poll.id
     })
 
     it('creates a new poll with the given title', done => {

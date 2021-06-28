@@ -2,13 +2,17 @@
   "name": "seneca-vote",
   "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "vote.js",
   "scripts": {
-    "test": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
-    "check-coverage": "./node_modules/nyc/bin/nyc.js npm test",
+    "test": "./node_modules/nyc/bin/nyc.js npm run test-fast",
+    "test-fast": "./node_modules/jasmine/bin/jasmine.js --config=test/support/jasmine.json",
     "clean": "rm -rf node_modules yarn.lock package-lock.json",
     "reset": "npm run clean && npm i && npm run build && npm test",
     "build": "echo no-build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lilsweetcaligula/seneca-vote"
   },
   "keywords": [],
   "contributors": [
@@ -18,7 +22,6 @@
   "license": "MIT",
   "dependencies": {
     "assert-plus": "1.0.0",
-    "joi": "17.4.0",
     "lodash.groupby": "4.6.0",
     "lodash.ismatch": "4.4.0",
     "moment": "2.29.1",
@@ -30,6 +33,7 @@
     "faker": "5.5.3",
     "jasmine": "3.7.0",
     "nyc": "15.1.0",
+    "seneca-mem-store": "6.0.3",
     "seneca-msg-test": "3.1.0"
   }
 }

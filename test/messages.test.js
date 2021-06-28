@@ -4,7 +4,6 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const SenecaMsgTest = require('seneca-msg-test')
 const Joi = SenecaMsgTest.Joi
-const { fetchProp } = require('./support/helpers')
 const VotePlugin = require('../')
 
 describe('message-level tests', () => {
@@ -47,11 +46,9 @@ describe('message-level tests', () => {
         upvoteWhenSomeParamsAreMissing(),
         upvoteWhenSuccessful({ poll_id }),
         upvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
-        upvoteWhenPollDoesNotExist(),
         downvoteWhenSomeParamsAreMissing(),
         downvoteWhenSuccessful({ poll_id }),
         downvoteWhenClientRequestedToSaveThePollRating({ poll_id }),
-        downvoteWhenPollDoesNotExist(),
         getPollWhenPollIdParamIsMissing(),
         getPollWhenSuccessful({ poll_id }),
         getPollWhenPollDoesNotExist(),
@@ -88,7 +85,7 @@ function upvoteWhenSomeParamsAreMissing() {
 
 function upvoteWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:up',
@@ -104,7 +101,7 @@ function upvoteWhenSuccessful(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
       }
     }
   }
@@ -112,7 +109,7 @@ function upvoteWhenSuccessful(args = {}) {
 
 function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:up',
@@ -124,34 +121,12 @@ function upvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         kind: 'red',
         code: 'mars'
       },
-      save_poll_rating_to: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 1, num_downvotes: 0 }
-      }
-    }
-  }
-}
-
-function upvoteWhenPollDoesNotExist() {
-  return {
-    pattern: 'vote:up',
-    params: {
-      fields: {
-        poll_id: 'does_not_exist',
-        voter_id: 'bar',
-        voter_type: 'sys/user',
-        kind: 'red',
-        code: 'mars'
-      }
-    },
-    out: {
-      ok: false,
-      why: 'not-found',
-      details: {
-        what: 'poll'
+        poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
       }
     }
   }
@@ -174,7 +149,7 @@ function downvoteWhenSomeParamsAreMissing() {
 
 function downvoteWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:down',
@@ -190,7 +165,7 @@ function downvoteWhenSuccessful(args = {}) {
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
       }
     }
   }
@@ -198,7 +173,7 @@ function downvoteWhenSuccessful(args = {}) {
 
 function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'vote:down',
@@ -210,34 +185,12 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         kind: 'red',
         code: 'mars'
       },
-      save_poll_rating_to: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1 }
-      }
-    }
-  }
-}
-
-function downvoteWhenPollDoesNotExist() {
-  return {
-    pattern: 'vote:down',
-    params: {
-      fields: {
-        poll_id: 'does_not_exist',
-        voter_id: 'bar',
-        voter_type: 'sys/user',
-        kind: 'red',
-        code: 'mars'
-      }
-    },
-    out: {
-      ok: false,
-      why: 'not-found',
-      details: {
-        what: 'poll'
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
       }
     }
   }
@@ -256,7 +209,7 @@ function getPollWhenPollIdParamIsMissing() {
 
 function getPollWhenSuccessful(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'get:poll',
@@ -298,7 +251,7 @@ function openPollWhenSomeParamsAreMissing() {
 
 function openPollWhenAPollWithTheGivenTitleAlreadyExists(args = {}) {
   Assert.object(args, 'args')
-  const poll_id = fetchProp(args, 'poll_id')
+  const poll_id = args.poll_id
 
   return {
     pattern: 'open:poll',

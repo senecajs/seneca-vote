@@ -2,7 +2,7 @@ const Assert = require('assert-plus')
 const Seneca = require('seneca')
 const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
-const { fetchProp, yesterday } = require('../support/helpers')
+const { yesterday } = require('../support/helpers')
 const Fixtures = require('../support/fixtures')
 const VotePlugin = require('../../')
 const PollRating = require('../../lib/poll_rating')
@@ -188,8 +188,18 @@ describe('the CastVote action', () => {
     })
 
     describe('when the poll does not exist', () => {
-      it('responds with an error', done => {
+      it('fails with an error', done => {
         const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+        let failed = false
+
+        spyOn(seneca_under_test, 'fail')
+          .withArgs('not_found', { what: 'poll' })
+          .and.callFake((..._args) => {
+            failed = true
+          })
+
 
         const params = validParams()
         const fake_poll_id = 'foo'
@@ -204,16 +214,11 @@ describe('the CastVote action', () => {
             params
           ))
           .then(async (result) => {
-            expect(result).toEqual({
-              ok: false,
-              why: 'not-found',
-              details: {
-                what: 'poll'
-              }
-            })
+            if (!failed) {
+              return done(new Error('Expected seneca to fail with an error.'))
+            }
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
-
 
             return done()
           })
@@ -229,7 +234,7 @@ describe('the CastVote action', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       beforeEach(async () => {
@@ -286,7 +291,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -349,7 +356,7 @@ describe('the CastVote action', () => {
             }))
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('creates a new upvote, the existing downvote is considered a "tombstone"', done => {
@@ -371,7 +378,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -428,7 +437,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 1, num_downvotes: 0 } }
+                data: {
+                  poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(1)
@@ -458,7 +469,7 @@ describe('the CastVote action', () => {
       // NOTE: This use case has been tested in more detail in the tests for
       // the delegatee utility.
       //
-      describe('when requested to save the rating to some entities', () => {
+      describe('when requested to denormalize the rating', () => {
         let seneca
 
         const vote_kind = 'red'
@@ -488,8 +499,12 @@ describe('the CastVote action', () => {
           spyOn(PollRating, 'denormalizeToEntities').and.callFake((...args) => {
             expect(args.length > 0).toEqual(true)
 
+
             const plugin_opts_arg = args[args.length - 1]
-            expect(plugin_opts_arg).toEqual(vote_plugin_opts)
+
+            expect(plugin_opts_arg)
+              .toEqual(jasmine.objectContaining(vote_plugin_opts))
+
 
             return denormalizeToEntities(...args)
           })
@@ -503,7 +518,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          poll_id = fetchProp(poll, 'id')
+          poll_id = poll.id
         })
 
 
@@ -514,7 +529,7 @@ describe('the CastVote action', () => {
             .make$(Fixtures.poll())
             .save$()
 
-          save_to_poll_id = fetchProp(poll, 'id')
+          save_to_poll_id = poll.id
         })
 
 
@@ -526,7 +541,7 @@ describe('the CastVote action', () => {
             const params = validParams({
               kind: vote_kind,
               code: vote_code,
-              save_poll_rating_to: { 'sys/poll': save_to_poll_id }
+              dependents: { 'sys/poll': save_to_poll_id }
             })
 
             params.fields.poll_id = poll_id
@@ -553,7 +568,7 @@ describe('the CastVote action', () => {
             const params = validParams({
               kind: vote_kind,
               code: vote_code,
-              save_poll_rating_to: { 'sys/poll': 'idonotexist' }
+              dependents: { 'sys/poll': 'idonotexist' }
             })
 
             params.fields.poll_id = poll_id
@@ -572,6 +587,103 @@ describe('the CastVote action', () => {
               })
               .catch(done)
           })
+        })
+
+        describe('when the given entity id is null', () => {
+          it('responds with an error', done => {
+            const seneca_under_test = senecaUnderTest(seneca, done)
+
+            const params = validParams({
+              kind: vote_kind,
+              code: vote_code,
+              dependents: { 'sys/poll': null }
+            })
+
+            params.fields.poll_id = poll_id
+
+            messageUpVote(seneca_under_test, params)
+              .then(async (result) => {
+                expect(result).toEqual({
+                  ok: false,
+                  why: 'invalid-field',
+                  details: {
+                    path: ['dependents', 'sys/poll'],
+                    why_exactly: 'base'
+                  }
+                })
+
+                expect(PollRating.denormalizeToEntities).not.toHaveBeenCalled()
+
+                return done()
+              })
+              .catch(done)
+          })
+        })
+      })
+
+      describe('requested to denormalize the rating, but no option', () => {
+        let seneca
+
+        const vote_kind = 'red'
+        const vote_code = 'mars'
+        const save_to_field = '_rating'
+
+        beforeEach(() => {
+          seneca = makeSeneca({ vote_plugin_opts: {} })
+        })
+
+
+        beforeEach(() => {
+          spyOn(PollRating, 'denormalizeToEntities').and.callThrough()
+        })
+
+
+        let poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          poll_id = poll.id
+        })
+
+
+        let save_to_poll_id
+
+        beforeEach(async () => {
+          const poll = await seneca.entity('sys/poll')
+            .make$(Fixtures.poll())
+            .save$()
+
+          save_to_poll_id = poll.id
+        })
+
+
+        it('ignores the request to denormalize', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+          const params = validParams({
+            kind: vote_kind,
+            code: vote_code,
+            dependents: { 'sys/poll': save_to_poll_id }
+          })
+
+          params.fields.poll_id = poll_id
+
+
+          messageUpVote(seneca_under_test, params)
+            .then(async (result) => {
+              expect(result.ok).toEqual(true)
+              expect(PollRating.denormalizeToEntities).toHaveBeenCalled()
+
+              const poll = await seneca.make('sys/poll').load$(save_to_poll_id)
+              expect(save_to_field in poll).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
         })
       })
     })
@@ -726,8 +838,18 @@ describe('the CastVote action', () => {
     })
 
     describe('when the poll does not exist', () => {
-      it('responds with an error', done => {
+      it('fails with an error', done => {
         const seneca_under_test = senecaUnderTest(seneca, done)
+
+
+        let failed = false
+
+        spyOn(seneca_under_test, 'fail')
+          .withArgs('not_found', { what: 'poll' })
+          .and.callFake((..._args) => {
+            failed = true
+          })
+
 
         const params = validParams()
         const fake_poll_id = 'foo'
@@ -742,16 +864,11 @@ describe('the CastVote action', () => {
             params
           ))
           .then(async (result) => {
-            expect(result).toEqual({
-              ok: false,
-              why: 'not-found',
-              details: {
-                what: 'poll'
-              }
-            })
+            if (!failed) {
+              return done(new Error('Expected seneca to fail with an error.'))
+            }
 
             expect(await countVotes(seneca_under_test)).toEqual(0)
-
 
             return done()
           })
@@ -767,7 +884,7 @@ describe('the CastVote action', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       beforeEach(async () => {
@@ -804,7 +921,7 @@ describe('the CastVote action', () => {
             }))
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('creates a new downvote, the existing downvote is considered a "tombstone"', done => {
@@ -826,7 +943,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -909,7 +1028,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(2)
@@ -966,7 +1087,9 @@ describe('the CastVote action', () => {
             .then(async (result) => {
               expect(result).toEqual({
                 ok: true,
-                data: { poll_stats: { num_upvotes: 0, num_downvotes: 1 } }
+                data: {
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                }
               })
 
               expect(await countVotes(seneca)).toEqual(1)

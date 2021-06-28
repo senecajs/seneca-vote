@@ -4,7 +4,6 @@ const Entities = require('seneca-entity')
 const SenecaPromisify = require('seneca-promisify')
 const Faker = require('faker')
 const Fixtures = require('../support/fixtures')
-const { fetchProp } = require('../support/helpers')
 const PollRating = require('../../lib/poll_rating')
 const { NotFoundError } = require('../../lib/errors')
 
@@ -26,7 +25,7 @@ describe('PollRating service', () => {
   const vote_code = 'mars'
   const save_to_field = '_rating'
 
-  const plugin_opts = {
+  const options = {
     dependents: {
       [vote_kind]: {
         [vote_code]: {
@@ -47,7 +46,7 @@ describe('PollRating service', () => {
           .make$(Fixtures.poll())
           .save$()
 
-        poll_id = fetchProp(poll, 'id')
+        poll_id = poll.id
       })
 
       describe('requested vote kind does not match the one specified in the plugin options', () => {
@@ -60,7 +59,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind: 'nope', vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -83,7 +82,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code: 'nope' },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -104,7 +103,7 @@ describe('PollRating service', () => {
             .make$(Fixtures.vote())
             .save$()
 
-          vote_id = fetchProp(vote, 'id')
+          vote_id = vote.id
         })
 
         it('does not save the rating', done => {
@@ -116,7 +115,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const vote = await seneca.make('sys/vote').load$(vote_id)
@@ -129,7 +128,41 @@ describe('PollRating service', () => {
         })
       })
 
-      describe('normally', () => {
+      describe('kind and code match, entity exists, field is null', () => {
+        const options = {
+          dependents: {
+            [vote_kind]: {
+              [vote_code]: {
+                totals: {
+                  'sys/poll': { field: null }
+                }
+              }
+            }
+          }
+        }
+
+        it('does not save the rating', done => {
+          const seneca_under_test = senecaUnderTest(seneca, done)
+
+          const rating = 37
+          const entities = { 'sys/poll': poll_id }
+
+          PollRating.denormalizeToEntities(
+            { rating, entities, vote_kind, vote_code },
+            { seneca: seneca_under_test },
+            options
+          )
+            .then(async () => {
+              const poll = await seneca.make('sys/poll').load$(poll_id)
+              expect(save_to_field in poll).toEqual(false)
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('both kind and code match, and the entity exists', () => {
         it('saves the rating to the entity', done => {
           const seneca_under_test = senecaUnderTest(seneca, done)
 
@@ -139,7 +172,7 @@ describe('PollRating service', () => {
           PollRating.denormalizeToEntities(
             { rating, entities, vote_kind, vote_code },
             { seneca: seneca_under_test },
-            plugin_opts
+            options
           )
             .then(async () => {
               const poll = await seneca.make('sys/poll').load$(poll_id)
@@ -163,7 +196,7 @@ describe('PollRating service', () => {
         PollRating.denormalizeToEntities(
           { rating, entities, vote_kind, vote_code },
           { seneca: seneca_under_test },
-          plugin_opts
+          options
         )
           .then(async () => {
             done(new Error('Expected an error to be thrown'))
