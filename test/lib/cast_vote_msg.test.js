@@ -457,7 +457,8 @@ describe('the CastVote action', () => {
                 voter_type: 'sys/user',
                 kind: jasmine.any(String),
                 code: jasmine.any(String),
-                created_at: jasmine.any(Date)
+                created_at: jasmine.any(Date),
+                undone_at: null
               })
 
               return done()
@@ -1094,7 +1095,8 @@ describe('the CastVote action', () => {
                 voter_type: 'sys/user',
                 kind: jasmine.any(String),
                 code: jasmine.any(String),
-                created_at: jasmine.any(Date)
+                created_at: jasmine.any(Date),
+                undone_at: null
               })
 
               return done()
@@ -1105,12 +1107,12 @@ describe('the CastVote action', () => {
     })
   })
 
-  describe('undoing when not previously voted', () => {
+  xdescribe('undoing when not previously voted', () => { // xfcs
     // TODO: It should not blow up or anything. Return as normal.
     //
   })
 
-  fdescribe('undoing an upvote', () => { // fcs
+  describe('undoing an upvote', () => {
     async function messageUndoVote(seneca, params) {
       return seneca.post({ sys: 'vote', vote: 'undo', ...params })
     }
@@ -1230,47 +1232,7 @@ describe('the CastVote action', () => {
     }
   })
 
-  describe('undoing a "future" upvote', () => {
-    // NOTE: This situation may happen when there's a race condition -
-    // a user downvoted, then tried to "undo" it, then voted again. If
-    // that happens - we should only undo the vote that happened in the
-    // past, and not the new one.
-    //
-    async function messageUndoVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'undo', ...params })
-    }
-
-    const now = new Date()
-
-    beforeEach(() => {
-      jasmine.clock().install()
-      jasmine.clock().mockDate(now)
-    })
-
-    afterEach(() => {
-      jasmine.clock().uninstall()
-    })
-
-
-    let vote_id
-
-    const voter_id = 'v123abc'
-    const voter_type = 'sys/user'
-
-    beforeEach(async () => {
-      await seneca.entity('sys/vote')
-        .make$(Fixtures.vote({
-          poll_id,
-          voter_id,
-          voter_type,
-          type: 'up',
-          created_at: yesterday(now)
-        }))
-        .save$()
-    })
-  })
-
-  describe('undoing a downvote', () => {
+  xdescribe('undoing a downvote', () => { // xfcs
     async function messageUndoVote(seneca, params) {
       return seneca.post({ sys: 'vote', vote: 'undo', ...params })
     }
