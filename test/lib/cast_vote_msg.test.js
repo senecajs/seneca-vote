@@ -1138,10 +1138,10 @@ describe('the CastVote action', () => {
     })
 
 
-    let vote_id
-
     const voter_id = 'v123abc'
     const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
 
     beforeEach(userDownvotesOnce)
 
@@ -1154,6 +1154,8 @@ describe('the CastVote action', () => {
       params.fields.poll_id = poll_id
       params.fields.voter_id = voter_id
       params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
 
       countVotes(seneca_under_test)
         .then(num_votes_initially => {
@@ -1176,8 +1178,8 @@ describe('the CastVote action', () => {
           expect(await countVotes(seneca)).toEqual(2)
 
 
-          const vote = await seneca.entity('sys/vote')
-            .load$({ type: 'down', created_at: now })
+          const [vote, older_vote] = await seneca.entity('sys/vote')
+            .list$({ sort$: { created_at: -1 } })
 
           expect(vote.data$(false)).toEqual(jasmine.objectContaining({
             poll_id,
@@ -1187,16 +1189,12 @@ describe('the CastVote action', () => {
             undone_at: now
           }))
 
-
-          const older_vote = await seneca.entity('sys/vote')
-            .load$({ type: 'down', created_at: yesterday(now) })
-
           expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
             poll_id,
             voter_id,
             voter_type,
             type: 'down',
-            //undone_at: null // TODO
+            undone_at: null
           }))
 
 
@@ -1211,6 +1209,8 @@ describe('the CastVote action', () => {
           poll_id,
           voter_id,
           voter_type,
+          kind: vote_kind,
+          code: vote_code,
           type: 'down',
           created_at: yesterday(now)
         }))
@@ -1223,6 +1223,8 @@ describe('the CastVote action', () => {
           poll_id,
           voter_id,
           voter_type,
+          kind: vote_kind,
+          code: vote_code,
           type: 'down',
           created_at: now
         }))
