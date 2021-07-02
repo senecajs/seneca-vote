@@ -1110,7 +1110,7 @@ describe('the CastVote action', () => {
     //
   })
 
-  fdescribe('undoing a downvote', () => { // fcs
+  fdescribe('undoing an upvote', () => { // fcs
     async function messageUndoVote(seneca, params) {
       return seneca.post({ sys: 'vote', vote: 'undo', ...params })
     }
@@ -1143,11 +1143,11 @@ describe('the CastVote action', () => {
     const vote_kind = 'red'
     const vote_code = 'mars'
 
-    beforeEach(userDownvotesOnce)
+    beforeEach(userUpvotesOnce)
 
-    beforeEach(userDownvotesAgain)
+    beforeEach(userUpvotesAgain)
 
-    it("undoes the user's current downvote", done => {
+    it("undoes the user's current upvote", done => {
       const seneca_under_test = senecaUnderTest(seneca, done)
 
       const params = validParams()
@@ -1166,14 +1166,12 @@ describe('the CastVote action', () => {
           params
         ))
         .then(async (result) => {
-          /*
           expect(result).toEqual({
             ok: true,
             data: {
               poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
             }
           })
-          */
 
           expect(await countVotes(seneca)).toEqual(2)
 
@@ -1185,7 +1183,7 @@ describe('the CastVote action', () => {
             poll_id,
             voter_id,
             voter_type,
-            type: 'down',
+            type: 'up',
             undone_at: now
           }))
 
@@ -1193,7 +1191,7 @@ describe('the CastVote action', () => {
             poll_id,
             voter_id,
             voter_type,
-            type: 'down',
+            type: 'up',
             undone_at: null
           }))
 
@@ -1203,7 +1201,7 @@ describe('the CastVote action', () => {
         .catch(done)
     })
 
-    async function userDownvotesOnce() {
+    async function userUpvotesOnce() {
       await seneca.entity('sys/vote')
         .make$(Fixtures.vote({
           poll_id,
@@ -1211,13 +1209,13 @@ describe('the CastVote action', () => {
           voter_type,
           kind: vote_kind,
           code: vote_code,
-          type: 'down',
+          type: 'up',
           created_at: yesterday(now)
         }))
         .save$()
     }
 
-    async function userDownvotesAgain() {
+    async function userUpvotesAgain() {
       await seneca.entity('sys/vote')
         .make$(Fixtures.vote({
           poll_id,
@@ -1225,14 +1223,14 @@ describe('the CastVote action', () => {
           voter_type,
           kind: vote_kind,
           code: vote_code,
-          type: 'down',
+          type: 'up',
           created_at: now
         }))
         .save$()
     }
   })
 
-  describe('undoing a "future" downvote', () => {
+  describe('undoing a "future" upvote', () => {
     // NOTE: This situation may happen when there's a race condition -
     // a user downvoted, then tried to "undo" it, then voted again. If
     // that happens - we should only undo the vote that happened in the
@@ -1272,7 +1270,7 @@ describe('the CastVote action', () => {
     })
   })
 
-  describe('undoing an upvote', () => {
+  describe('undoing a downvote', () => {
     async function messageUndoVote(seneca, params) {
       return seneca.post({ sys: 'vote', vote: 'undo', ...params })
     }
