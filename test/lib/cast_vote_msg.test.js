@@ -1112,9 +1112,33 @@ describe('the CastVote action', () => {
     })
   })
 
-  xdescribe('undoing when not previously voted', () => { // xfcs
-    // TODO: It should not blow up or anything. Return as normal.
-    //
+  describe('trying to undo a vote when not previously voted', () => {
+    it('succeeds but does nothing', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+      const params = validParams()
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(0, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(0)
+
+          return done()
+        })
+        .catch(done)
+    })
   })
 
   describe('undoing an upvote', () => {
@@ -1233,13 +1257,120 @@ describe('the CastVote action', () => {
     }
   })
 
-  xdescribe('undoing a downvote', () => { // xfcs
-    async function messageUndoVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'undo', ...params })
+  describe('undoing a downvote', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(userDownvotesOnce)
+
+    beforeEach(userDownvotesAgain)
+
+    it("undoes the user's current downvote", done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(2, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(2)
+
+
+          const [vote, older_vote] = await seneca.entity('sys/vote')
+            .list$({ sort$: { created_at: -1 } })
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'down',
+            undone_at: now
+          }))
+
+          expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'down',
+            undone_at: null
+          }))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userDownvotesOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'down',
+          created_at: yesterday(now)
+        }))
+        .save$()
     }
 
-    // TODO
-    //
+    async function userDownvotesAgain() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'down',
+          created_at: now
+        }))
+        .save$()
+    }
   })
 })
 
