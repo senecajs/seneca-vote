@@ -52,11 +52,20 @@ describe('the CastVote action', () => {
     }
   }
 
-  describe('upvoting', () => {
-    async function messageUpVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'up', ...params })
-    }
+  async function messageUndoVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'undo', ...params })
+  }
 
+  async function messageUpVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'up', ...params })
+  }
+
+  async function messageDownVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'down', ...params })
+  }
+
+
+  describe('upvoting', () => {
     describe('when the "fields" parameter is missing', () => {
       it('responds with a validation error', done => {
         const params = validParams()
@@ -691,10 +700,6 @@ describe('the CastVote action', () => {
   })
 
   describe('downvoting', () => {
-    async function messageDownVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'down', ...params })
-    }
-
     describe('when the "fields" parameter is missing', () => {
       it('responds with a validation error', done => {
         const params = validParams()
@@ -1113,10 +1118,6 @@ describe('the CastVote action', () => {
   })
 
   describe('undoing an upvote', () => {
-    async function messageUndoVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'undo', ...params })
-    }
-
     const now = new Date()
 
     beforeEach(() => {
