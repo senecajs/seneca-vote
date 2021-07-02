@@ -1141,6 +1141,203 @@ describe('the CastVote action', () => {
     })
   })
 
+  describe('trying to undo a vote, previously voted on another poll', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    let another_poll_id
+
+    beforeEach(async () => {
+      const another_poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      another_poll_id = another_poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(userUpvotesAnotherPollOnce)
+
+
+    it('succeeds but does nothing', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(1, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(1)
+
+
+          const [vote] = await seneca.entity('sys/vote')
+            .list$({})
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id: another_poll_id,
+            voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: null
+          }))
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userUpvotesAnotherPollOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id: another_poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+  })
+
+
+  describe('the voter not previously voted, someone else did', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const another_voter_id = 'franksinatra123'
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(anotherUserUpvotesOnce)
+
+    it('does nothing', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(1, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(1)
+
+
+          const [vote] = await seneca.entity('sys/vote')
+            .list$({})
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id: another_voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: null
+          }))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function anotherUserUpvotesOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id: another_voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+  })
+
   describe('undoing an upvote', () => {
     const now = new Date()
 
