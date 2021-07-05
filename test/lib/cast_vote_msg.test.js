@@ -8,11 +8,10 @@ const VotePlugin = require('../../')
 const PollRating = require('../../lib/poll_rating')
 
 describe('the CastVote action', () => {
-  let seneca
+  const seneca = makeSeneca()
 
-  beforeEach(() => {
-    seneca = makeSeneca()
-  })
+  beforeEach(() => clearStore(seneca))
+  afterEach(() => clearStore(seneca))
 
   function makeSeneca(opts = {}) {
     const { vote_plugin_opts = {} } = opts
@@ -25,18 +24,6 @@ describe('the CastVote action', () => {
 
   function senecaUnderTest(seneca, cb) {
     return seneca.test(cb)
-  }
-
-  async function countEntities(entity) {
-    return entity.list$({}).then(xs => xs.length)
-  }
-
-  async function countVotes(seneca) {
-    return countEntities(seneca.entity('sys/vote'))
-  }
-
-  async function countPolls(seneca) {
-    return countEntities(seneca.entity('sys/poll'))
   }
 
   function validParams(overrides = {}) {
@@ -480,8 +467,6 @@ describe('the CastVote action', () => {
       // the delegatee utility.
       //
       describe('when requested to denormalize the rating', () => {
-        let seneca
-
         const vote_kind = 'red'
         const vote_code = 'mars'
         const save_to_field = '_rating'
@@ -498,9 +483,10 @@ describe('the CastVote action', () => {
           }
         }
 
-        beforeEach(() => {
-          seneca = makeSeneca({ vote_plugin_opts })
-        })
+        const seneca = makeSeneca({ vote_plugin_opts })
+
+        beforeEach(() => clearStore(seneca))
+        afterEach(() => clearStore(seneca))
 
 
         beforeEach(() => {
@@ -632,15 +618,15 @@ describe('the CastVote action', () => {
       })
 
       describe('requested to denormalize the rating, but no option', () => {
-        let seneca
-
         const vote_kind = 'red'
         const vote_code = 'mars'
         const save_to_field = '_rating'
 
-        beforeEach(() => {
-          seneca = makeSeneca({ vote_plugin_opts: {} })
-        })
+
+        const seneca = makeSeneca({ vote_plugin_opts: {} })
+
+        beforeEach(() => clearStore(seneca))
+        afterEach(() => clearStore(seneca))
 
 
         beforeEach(() => {
@@ -1722,5 +1708,22 @@ describe('the CastVote action', () => {
         .save$()
     }
   })
+
+  async function clearStore(seneca) {
+    await seneca.make('sys/vote').remove$({ all$: true })
+    await seneca.make('sys/poll').remove$({ all$: true })
+  }
+
+  async function countEntities(entity) {
+    return entity.list$({ all$: true }).then(xs => xs.length)
+  }
+
+  async function countVotes(seneca) {
+    return countEntities(seneca.entity('sys/vote'))
+  }
+
+  async function countPolls(seneca) {
+    return countEntities(seneca.entity('sys/poll'))
+  }
 })
 
