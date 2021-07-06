@@ -204,15 +204,15 @@ function downvoteWhenSuccessful(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars',
-      },
+        code: 'mars'
+      }
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 },
-      },
-    },
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 },
+      }
+    }
   }
 }
 
@@ -228,16 +228,16 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars',
+        code: 'mars'
       },
-      dependents: { 'sys/poll': poll_id },
+      dependents: { 'sys/poll': poll_id }
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 },
-      },
-    },
+        poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 },
+      }
+    }
   }
 }
 

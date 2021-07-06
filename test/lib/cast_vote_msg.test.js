@@ -13,6 +13,17 @@ describe('the CastVote action', () => {
   beforeEach(() => clearStore(seneca))
   afterEach(() => clearStore(seneca))
 
+
+  const seneca_with_negative_vote_totals = makeSeneca({
+    vote_plugin_opts: {
+      allow_negative_num_total_votes: true
+    }
+  })
+
+  beforeEach(() => clearStore(seneca_with_negative_vote_totals))
+  afterEach(() => clearStore(seneca_with_negative_vote_totals))
+
+
   function makeSeneca(opts = {}) {
     const { vote_plugin_opts = {} } = opts
 
@@ -923,7 +934,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1008,7 +1019,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1067,7 +1078,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1229,7 +1240,6 @@ describe('the CastVote action', () => {
         .save$()
     }
   })
-
 
   describe('the voter not previously voted, someone else did', () => {
     const now = new Date()
