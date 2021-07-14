@@ -22,6 +22,8 @@ const {
 } = Shapes
 
 module.exports.defaults = {
+  allow_negative_num_total_votes: Joi.boolean().default(false).optional(),
+
   dependents: Joi.object()
     .pattern(
       voteKind(Joi),

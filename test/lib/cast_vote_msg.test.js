@@ -8,11 +8,21 @@ const VotePlugin = require('../../')
 const PollRating = require('../../lib/poll_rating')
 
 describe('the CastVote action', () => {
-  let seneca
+  const seneca = makeSeneca()
 
-  beforeEach(() => {
-    seneca = makeSeneca()
+  beforeEach(() => clearStore(seneca))
+  afterEach(() => clearStore(seneca))
+
+
+  const seneca_with_negative_vote_totals = makeSeneca({
+    vote_plugin_opts: {
+      allow_negative_num_total_votes: true
+    }
   })
+
+  beforeEach(() => clearStore(seneca_with_negative_vote_totals))
+  afterEach(() => clearStore(seneca_with_negative_vote_totals))
+
 
   function makeSeneca(opts = {}) {
     const { vote_plugin_opts = {} } = opts
@@ -27,36 +37,33 @@ describe('the CastVote action', () => {
     return seneca.test(cb)
   }
 
-  async function countEntities(entity) {
-    return entity.list$({}).then(xs => xs.length)
+  function validParams(overrides = {}) {
+    return {
+      fields: {
+        poll_id: 'foo',
+        voter_id: 'bar',
+        voter_type: 'sys/user',
+        kind: 'red',
+        code: 'mars'
+      },
+      ...overrides
+    }
   }
 
-  async function countVotes(seneca) {
-    return countEntities(seneca.entity('sys/vote'))
+  async function messageUndoVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'undo', ...params })
   }
 
-  async function countPolls(seneca) {
-    return countEntities(seneca.entity('sys/poll'))
+  async function messageUpVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'up', ...params })
   }
+
+  async function messageDownVote(seneca, params) {
+    return seneca.post({ sys: 'vote', vote: 'down', ...params })
+  }
+
 
   describe('upvoting', () => {
-    async function messageUpVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'up', ...params })
-    }
-
-    function validParams(overrides = {}) {
-      return {
-        fields: {
-          poll_id: 'foo',
-          voter_id: 'bar',
-          voter_type: 'sys/user',
-          kind: 'red',
-          code: 'mars'
-        },
-        ...overrides
-      }
-    }
-
     describe('when the "fields" parameter is missing', () => {
       it('responds with a validation error', done => {
         const params = validParams()
@@ -457,7 +464,8 @@ describe('the CastVote action', () => {
                 voter_type: 'sys/user',
                 kind: jasmine.any(String),
                 code: jasmine.any(String),
-                created_at: jasmine.any(Date)
+                created_at: jasmine.any(Date),
+                undone_at: null
               })
 
               return done()
@@ -470,8 +478,6 @@ describe('the CastVote action', () => {
       // the delegatee utility.
       //
       describe('when requested to denormalize the rating', () => {
-        let seneca
-
         const vote_kind = 'red'
         const vote_code = 'mars'
         const save_to_field = '_rating'
@@ -488,9 +494,10 @@ describe('the CastVote action', () => {
           }
         }
 
-        beforeEach(() => {
-          seneca = makeSeneca({ vote_plugin_opts })
-        })
+        const seneca = makeSeneca({ vote_plugin_opts })
+
+        beforeEach(() => clearStore(seneca))
+        afterEach(() => clearStore(seneca))
 
 
         beforeEach(() => {
@@ -622,15 +629,15 @@ describe('the CastVote action', () => {
       })
 
       describe('requested to denormalize the rating, but no option', () => {
-        let seneca
-
         const vote_kind = 'red'
         const vote_code = 'mars'
         const save_to_field = '_rating'
 
-        beforeEach(() => {
-          seneca = makeSeneca({ vote_plugin_opts: {} })
-        })
+
+        const seneca = makeSeneca({ vote_plugin_opts: {} })
+
+        beforeEach(() => clearStore(seneca))
+        afterEach(() => clearStore(seneca))
 
 
         beforeEach(() => {
@@ -690,23 +697,6 @@ describe('the CastVote action', () => {
   })
 
   describe('downvoting', () => {
-    async function messageDownVote(seneca, params) {
-      return seneca.post({ sys: 'vote', vote: 'down', ...params })
-    }
-
-    function validParams(overrides = {}) {
-      return {
-        fields: {
-          poll_id: 'foo',
-          voter_id: 'bar',
-          voter_type: 'sys/user',
-          kind: 'red',
-          code: 'mars'
-        },
-        ...overrides
-      }
-    }
-
     describe('when the "fields" parameter is missing', () => {
       it('responds with a validation error', done => {
         const params = validParams()
@@ -944,7 +934,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1029,7 +1019,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1088,7 +1078,7 @@ describe('the CastVote action', () => {
               expect(result).toEqual({
                 ok: true,
                 data: {
-                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: -1 }
+                  poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 }
                 }
               })
 
@@ -1107,7 +1097,8 @@ describe('the CastVote action', () => {
                 voter_type: 'sys/user',
                 kind: jasmine.any(String),
                 code: jasmine.any(String),
-                created_at: jasmine.any(Date)
+                created_at: jasmine.any(Date),
+                undone_at: null
               })
 
               return done()
@@ -1117,5 +1108,632 @@ describe('the CastVote action', () => {
       })
     })
   })
+
+  describe('trying to undo a vote when not previously voted', () => {
+    it('succeeds but does nothing', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+      const params = validParams()
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(0, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(0)
+
+          return done()
+        })
+        .catch(done)
+    })
+  })
+
+  describe('undoing a vote for a poll but only voted on another poll', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    let another_poll_id
+
+    beforeEach(async () => {
+      const another_poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      another_poll_id = another_poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(userUpvotesAnotherPollOnce)
+
+
+    it("succeeds but does not undo the voter's other vote", done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(1, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(1)
+
+
+          const [vote] = await seneca.entity('sys/vote')
+            .list$({})
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id: another_poll_id,
+            voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: null
+          }))
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userUpvotesAnotherPollOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id: another_poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+  })
+
+  describe('the voter not previously voted, someone else did', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const another_voter_id = 'franksinatra123'
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(anotherUserUpvotesOnce)
+
+    it('does nothing', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(1, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 1, num_downvotes: 0, num_total: 1 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(1)
+
+
+          const [vote] = await seneca.entity('sys/vote')
+            .list$({})
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id: another_voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: null
+          }))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function anotherUserUpvotesOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id: another_voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+  })
+
+  describe('undoing an upvote', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(userUpvotesOnce)
+
+    beforeEach(userUpvotesAgain)
+
+    it("undoes the user's current upvote", done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(2, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(2)
+
+
+          const [vote, older_vote] = await seneca.entity('sys/vote')
+            .list$({ sort$: { created_at: -1 } })
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: now
+          }))
+
+          expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'up',
+            undone_at: null
+          }))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userUpvotesOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+
+    async function userUpvotesAgain() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: now
+        }))
+        .save$()
+    }
+  })
+
+  describe('undoing a downvote', () => {
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+    beforeEach(userDownvotesOnce)
+
+    beforeEach(userDownvotesAgain)
+
+    it("undoes the user's current downvote", done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(2, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(2)
+
+
+          const [vote, older_vote] = await seneca.entity('sys/vote')
+            .list$({ sort$: { created_at: -1 } })
+
+          expect(vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'down',
+            undone_at: now
+          }))
+
+          expect(older_vote.data$(false)).toEqual(jasmine.objectContaining({
+            poll_id,
+            voter_id,
+            voter_type,
+            type: 'down',
+            undone_at: null
+          }))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userDownvotesOnce() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'down',
+          created_at: yesterday(now)
+        }))
+        .save$()
+    }
+
+    async function userDownvotesAgain() {
+      await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'down',
+          created_at: now
+        }))
+        .save$()
+    }
+  })
+
+  describe('trying to undo an undone downvote', () => {
+    /* NOTE: The logic for this scenario may be understood as follows. The
+     * driving idea behind the logic, from the business perspective, is that
+     * only the most recent vote on a given poll by a given voter counts.
+     *
+     * Assume Jimi upvotes once, then downvotes. Since Jimi's downvote is
+     * most recent, we consider Jimi to have downvoted on a poll. Any of Jimi's
+     * votes that came before it are completely void.
+     *
+     * Now assume that shortly thereafter Jimi undoes his most recent vote.
+     * This action effectively undoes Jimi's downvote. Now assume that Jimi
+     * tries to undo his most recent vote again. However, his most recent
+     * vote is already void (i.e. "undone"), hence it just do nothing. And
+     * nope we do not undo Jimi's upvote that was preceding the downvote.
+     *
+     */
+    const now = new Date()
+
+    beforeEach(() => {
+      jasmine.clock().install()
+      jasmine.clock().mockDate(now)
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
+
+    let poll_id
+
+    beforeEach(async () => {
+      const poll = await seneca.entity('sys/poll')
+        .make$(Fixtures.poll())
+        .save$()
+
+      poll_id = poll.id
+    })
+
+
+    const voter_id = 'v123abc'
+    const voter_type = 'sys/user'
+    const vote_kind = 'red'
+    const vote_code = 'mars'
+
+
+    let upvote_id
+
+    beforeEach(userUpvotes)
+
+
+    let downvote_id
+
+    beforeEach(userDownvotes)
+
+
+    beforeEach(userCancelsHisVote)
+
+    it('does not "undo" previous votes of the voter', done => {
+      const seneca_under_test = senecaUnderTest(seneca, done)
+
+      const params = validParams()
+      params.fields.poll_id = poll_id
+      params.fields.voter_id = voter_id
+      params.fields.voter_type = voter_type
+      params.fields.kind = vote_kind
+      params.fields.code = vote_code
+
+      countVotes(seneca_under_test)
+        .then(num_votes_initially => {
+          Assert.strictEqual(2, num_votes_initially)
+        })
+        .then(() => messageUndoVote(
+          seneca_under_test,
+          params
+        ))
+        .then(async (result) => {
+          expect(result).toEqual({
+            ok: true,
+            data: {
+              poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
+            }
+          })
+
+          expect(await countVotes(seneca)).toEqual(2)
+
+
+          Assert(upvote_id, 'upvote_id')
+
+          const upvote = await seneca.make('sys/vote').load$(upvote_id)
+
+          Assert(upvote, 'upvote')
+          expect(upvote.undone_at).toEqual(null)
+
+
+          Assert(downvote_id, 'downvote_id')
+
+          const downvote = await seneca.make('sys/vote').load$(downvote_id)
+
+          Assert(downvote, 'downvote')
+          expect(downvote.undone_at).toEqual(jasmine.any(Date))
+
+
+          return done()
+        })
+        .catch(done)
+    })
+
+    async function userUpvotes() {
+      const upvote = await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'down',
+          created_at: yesterday(now)
+        }))
+        .save$()
+
+      upvote_id = upvote.id
+    }
+
+    async function userDownvotes() {
+      const downvote = await seneca.entity('sys/vote')
+        .make$(Fixtures.vote({
+          poll_id,
+          voter_id,
+          voter_type,
+          kind: vote_kind,
+          code: vote_code,
+          type: 'up',
+          created_at: now
+        }))
+        .save$()
+
+      downvote_id = downvote.id
+    }
+
+    async function userCancelsHisVote() {
+      Assert(downvote_id, 'downvote_id')
+
+      const downvote = await seneca.entity('sys/vote')
+        .load$(downvote_id)
+
+      Assert(downvote, 'downvote')
+
+      await downvote
+        .data$({ undone_at: new Date() })
+        .save$()
+    }
+  })
+
+  async function clearStore(seneca) {
+    await seneca.make('sys/vote').remove$({ all$: true })
+    await seneca.make('sys/poll').remove$({ all$: true })
+  }
+
+  async function countEntities(entity) {
+    return entity.list$({ all$: true }).then(xs => xs.length)
+  }
+
+  async function countVotes(seneca) {
+    return countEntities(seneca.entity('sys/vote'))
+  }
+
+  async function countPolls(seneca) {
+    return countEntities(seneca.entity('sys/poll'))
+  }
 })
 

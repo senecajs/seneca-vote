@@ -12,6 +12,7 @@ class Fixtures {
       kind: Faker.random.alphaNumeric(8),
       code: Faker.random.alphaNumeric(8),
       created_at: yesterday(),
+      undone_at: null,
       ...overrides
     }
   }

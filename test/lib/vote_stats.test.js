@@ -7,7 +7,7 @@ const Fixtures = require('../support/fixtures')
 const { yesterday, now } = require('../support/helpers')
 const VoteStats = require('../../lib/vote_stats')
 
-describe('the VoteStats service', () => {
+describe('VoteStats', () => {
   let seneca
 
   beforeEach(() => {
@@ -591,6 +591,64 @@ describe('the VoteStats service', () => {
                 num_upvotes: 0,
                 num_downvotes: 0
               }))
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('negative values for vote total enabled', () => {
+        beforeEach(async () => {
+          await seneca.make('sys/vote')
+            .data$(voteFixture({
+              type: 'down',
+              poll_id,
+              created_at: yesterday()
+            }))
+            .save$()
+        })
+
+        it('returns a correct total for a downvote', done => {
+          const si = senecaUnderTest(seneca, done)
+          const ctx = { seneca: si }
+          const options = { allow_negative_num_total_votes: true }
+
+          VoteStats
+            .forPoll(validParams({ poll_id }), ctx, options)
+            .then(result => {
+              expect(result).toEqual(jasmine.objectContaining({
+                num_downvotes: 1,
+                num_total: -1
+              }))
+
+              return done()
+            })
+            .catch(done)
+        })
+      })
+
+      describe('negative values for vote total disabled (default)', () => {
+        beforeEach(async () => {
+          await seneca.make('sys/vote')
+            .data$(voteFixture({
+              type: 'down',
+              poll_id,
+              created_at: yesterday()
+            }))
+            .save$()
+        })
+
+        it('returns a correct total for a downvote', done => {
+          const si = senecaUnderTest(seneca, done)
+
+          VoteStats
+            .forPoll(validParams({ poll_id }), { seneca: si })
+            .then(result => {
+              expect(result).toEqual(jasmine.objectContaining({
+                num_downvotes: 1,
+                num_total: 0
+              }))
+
               return done()
             })
             .catch(done)
