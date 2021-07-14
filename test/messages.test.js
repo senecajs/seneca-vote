@@ -37,13 +37,13 @@ describe('message tests for general behavior', () => {
             [poll_id]: {
               id: poll_id,
               title: 'Best hairline of the Ist century A.D.',
-              created_at: '2021-04-14T01:02:00.765Z'
+              created_at: '2021-04-14T01:02:00.765Z',
             },
             [upvoted_poll_id]: {
               id: upvoted_poll_id,
               title: 'Favorite Roman civil war',
-              created_at: '2021-07-05T00:00:00.765Z'
-            }
+              created_at: '2021-07-05T00:00:00.765Z',
+            },
           },
           vote: {
             [upvote_id]: {
@@ -55,7 +55,7 @@ describe('message tests for general behavior', () => {
               kind: vote_kind,
               code: vote_code,
               created_at: '2021-07-06T00:00:00.765Z',
-              undone_at: null
+              undone_at: null,
             },
             [upvote_id]: {
               id: upvote_id,
@@ -66,10 +66,10 @@ describe('message tests for general behavior', () => {
               kind: vote_kind,
               code: vote_code,
               created_at: '2021-07-06T00:00:00.765Z',
-              undone_at: null
-            }
-          }
-        }
+              undone_at: null,
+            },
+          },
+        },
       },
       calls: [
         upvoteWhenSomeParamsAreMissing(),
@@ -85,14 +85,14 @@ describe('message tests for general behavior', () => {
           poll_id: upvoted_poll_id,
           voter_id,
           vote_kind,
-          vote_code
+          vote_code,
         }),
 
         undoDownvoteWhenSuccessful({
           poll_id: downvoted_poll_id,
           voter_id,
           vote_kind,
-          vote_code
+          vote_code,
         }),
 
         getPollWhenPollIdParamIsMissing(),
@@ -100,8 +100,8 @@ describe('message tests for general behavior', () => {
         getPollWhenPollDoesNotExist(),
         openPollWhenSomeParamsAreMissing(),
         openPollWhenAPollWithTheGivenTitleAlreadyExists({ poll_id }),
-        openPollWhenAPollWithTheGivenTitleDoesNotExist()
-      ]
+        openPollWhenAPollWithTheGivenTitleDoesNotExist(),
+      ],
     }
   })
 
@@ -204,15 +204,15 @@ function downvoteWhenSuccessful(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
-      }
+        code: 'mars',
+      },
     },
     out: {
       ok: true,
       data: {
         poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 },
-      }
-    }
+      },
+    },
   }
 }
 
@@ -228,16 +228,16 @@ function downvoteWhenClientRequestedToSaveThePollRating(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
+        code: 'mars',
       },
-      dependents: { 'sys/poll': poll_id }
+      dependents: { 'sys/poll': poll_id },
     },
     out: {
       ok: true,
       data: {
         poll_stats: { num_upvotes: 0, num_downvotes: 1, num_total: 0 },
-      }
-    }
+      },
+    },
   }
 }
 
@@ -250,9 +250,9 @@ function undoWhenSomeParamsAreMissing() {
       why: 'invalid-field',
       details: {
         path: ['fields'],
-        why_exactly: 'required'
-      }
-    }
+        why_exactly: 'required',
+      },
+    },
   }
 }
 
@@ -269,15 +269,15 @@ function undoUpvoteWhenSuccessful(args = {}) {
         voter_id,
         kind: vote_kind,
         code: vote_code,
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
       },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
-      }
-    }
+        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 },
+      },
+    },
   }
 }
 
@@ -294,15 +294,15 @@ function undoDownvoteWhenSuccessful(args = {}) {
         voter_id,
         kind: vote_kind,
         code: vote_code,
-        voter_type: 'sys/user'
+        voter_type: 'sys/user',
       },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
-      }
-    }
+        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 },
+      },
+    },
   }
 }
 
@@ -318,15 +318,15 @@ function undoWhenNotPreviouslyVoted(args = {}) {
         voter_id: 'bar',
         voter_type: 'sys/user',
         kind: 'red',
-        code: 'mars'
-      }
+        code: 'mars',
+      },
     },
     out: {
       ok: true,
       data: {
-        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 }
-      }
-    }
+        poll_stats: { num_upvotes: 0, num_downvotes: 0, num_total: 0 },
+      },
+    },
   }
 }
 
@@ -438,4 +438,3 @@ function makeSeneca() {
 function senecaUnderTest(seneca, cb) {
   return seneca.test(cb)
 }
-
