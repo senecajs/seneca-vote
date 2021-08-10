@@ -2,6 +2,9 @@
 
 A voting plugin for Seneca.js
 
+| ![Voxgig](https://www.voxgig.com/res/img/vgt01r.png) | This open source module is sponsored and supported by [Voxgig](https://www.voxgig.com). |
+|---|---|
+
 ## Contents:  
 - [Requirements](#requirements)
 - [Message Handlers](#message-handlers)
