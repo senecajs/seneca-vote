@@ -30,7 +30,7 @@
     "lodash.ismatch": "4.4.0",
     "moment": "2.29.1",
     "prettier": "^2.3.2",
-    "seneca": "3.31.0",
+    "seneca": "3.34.1",
     "seneca-entity": "17.0.0",
     "seneca-promisify": "2.0.0"
   },
