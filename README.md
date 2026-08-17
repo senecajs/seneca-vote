@@ -1,16 +1,49 @@
-## @seneca/vote
+![Seneca](http://senecajs.org/files/assets/seneca-logo.png)
+> A [Seneca.js](http://senecajs.org) plugin
 
-A voting plugin for Seneca.js
+# @seneca/vote
+
+[![npm version](https://img.shields.io/npm/v/@seneca/vote.svg)](https://npmjs.com/package/@seneca/vote)
+[![build](https://github.com/senecajs/seneca-vote/actions/workflows/build.yml/badge.svg)](https://github.com/senecajs/seneca-vote/actions/workflows/build.yml)
+[![Known Vulnerabilities](https://snyk.io/test/github/senecajs/seneca-vote/badge.svg)](https://snyk.io/test/github/senecajs/seneca-vote)
+| ![Voxgig](https://www.voxgig.com/res/img/vgt01r.png) | This open source module is sponsored and supported by [Voxgig](https://www.voxgig.com). |
+|---|---|
 
 | ![Voxgig](https://www.voxgig.com/res/img/vgt01r.png) | This open source module is sponsored and supported by [Voxgig](https://www.voxgig.com). |
 |---|---|
 
-## Contents:  
-- [Requirements](#requirements)
-- [Message Handlers](#message-handlers)
-- [Dev Scripts](#dev-scripts)
+## Install
 
-## Requirements
+```sh
+npm install @seneca/vote
+```
+
+## Quick Example
+
+```js
+require('seneca')()
+  .use('@seneca/vote')
+```
+
+## More Examples
+
+See [test/](test/) for more usage examples.
+
+## Motivation
+
+A voting plugin for [Seneca.js](http://senecajs.org).
+
+## Support
+
+If you're using this module and need help, you can:
+
+- Post a [github issue](https://github.com/senecajs/seneca-vote/issues)
+- Tweet to [@senecajs](http://twitter.com/senecajs)
+- Ask on the [Gitter](https://gitter.im/senecajs/seneca)
+
+## API
+
+### Requirements
 
 The following Seneca plugins must be plugged in before this plugin
 can be used:  
@@ -30,15 +63,14 @@ Seneca()
   .use(VotePlugin)
 ```
 
-## Message Handlers
+### Message Handlers
 
 * [Upvote Action](#upvote-action)  
 * [Downvote Action](#downvote-action)  
 * [Open Poll Action](#open-poll-action)  
-* [Get Poll Action](#get-poll-action)  
+* [Get Poll Action](#get-poll-action)
 
-
-## Action Descriptions
+### Action Descriptions
 
 ### Upvote Action
 
@@ -118,7 +150,6 @@ The type of the voter. Currently only "sys/user" is supported.
 Specifies the entity name and the id to denormalize the new poll rating to. Used  
 in tandem with the `dependents` plugin option.
 
-
 #### Description
 
 Creates an downvote for a poll. If the voter has already upvoted on the poll,  
@@ -148,7 +179,6 @@ When the poll does not exist:
 ```js
 { ok: false, why: String, details?: { what: String? } }
 ```
-
 
 ### Open Poll Action
 
@@ -287,5 +317,18 @@ command does just that.
 `$ npm run clean`
 
 Normally this command is not meant to be invoked explicitly, and is generally  
-meant for consumption by other scripts in the project.  
+meant for consumption by other scripts in the project.
 
+## Contributing
+
+The [Senecajs org](https://github.com/senecajs/) encourages open participation. If you feel you can help in any way, be it with documentation, examples, extra testing, or new features please get in touch.
+
+### Running tests
+
+```sh
+npm run test
+```
+
+## Background
+
+Provides voting functionality as Seneca action patterns.
